@@ -1,0 +1,5 @@
+/src/.env
+/vendor/
+/src/secret/secret.txt
+/.idea/
+/test/
