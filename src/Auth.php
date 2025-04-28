@@ -2,6 +2,9 @@
 
 namespace AuthToken;
 
+use AuthToken\exception\ErrorConnection;
+use AuthToken\exception\InvalidToken;
+use AuthToken\exception\SecretNotFound;
 use Dotenv;
 use AuthToken\database\ConnectionDB;
 
@@ -19,6 +22,8 @@ class Auth extends Base64
      * If the token is invalid, it returns a False status and an error message.
      * @param $token - Token
      * @return array
+     * @throws SecretNotFound
+     * @throws InvalidToken
      */
     public function authenticateToken(string $token): array
     {
@@ -26,19 +31,13 @@ class Auth extends Base64
         // Divide o token em partes
         $part = explode('.', $token);
         if (count($part) !== 2) {
-            return [
-                'status' => false,
-                'message' => "Invalid Token."
-            ];
+            throw new InvalidToken('The structure of the token provided is not valid');
         }
         
         $path = __DIR__ . '/secret/secret.txt';
-        $file= fopen($path, 'r');
+        $file= @fopen($path, 'r');
         if (!$file) {
-            return [
-                'status' => false,
-                'message' => "The secret does not exist or is not a regular secret."
-            ];
+            throw new SecretNotFound('Secret file not found.');
         }
         $secret = fread($file, filesize($path));
         fclose($file); 
@@ -54,24 +53,18 @@ class Auth extends Base64
                 'message' => "Invalid Token."
             ];
         }
-        
-        // Decodifica o payload
-        $payload = json_decode($this->base64url_decode($codefiedPayload), true);
 
         $connection = new ConnectionDB();
         $cnx = $connection->connect($_ENV['DB_HOSTNAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], $_ENV['DB_DATABASE']);
         if (!$cnx) {
-            return [
-                'status' => false,
-                'message' => "Connection failed."
-            ];
+            throw new ErrorConnection('Connection failed');
         }
         // Verifica se o token está cadastrado no registro
         $resultado = $connection->searchToken($cnx, $token);
         if (!$resultado) {
             return [
                 'status' => false,
-                'message' => "Invalid Token."
+                'message' => "Token not found."
             ];
         }
 
@@ -96,6 +89,7 @@ class Auth extends Base64
      * If the token is invalid, it returns a False status and an error message.
      * * @param $token - Token
      * @return array
+     * @throws ErrorConnection
      */
     public function resetToken(string $token): array
     {
@@ -103,10 +97,7 @@ class Auth extends Base64
 
         $cnx = $connection->connect($_ENV['DB_HOSTNAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], $_ENV['DB_DATABASE']);
         if (!$cnx) {
-            return [
-                'status' => false,
-                'message' => "Connection failed"
-            ];
+            throw new ErrorConnection('Connection failed');
         }
 
         // Verifica se o token criado já está cadastrado na lista.
@@ -144,16 +135,14 @@ class Auth extends Base64
      * If the token is invalid, it returns a False status and an error message.
      * * @param $token - Token
      * @return array
+     * @throws ErrorConnection
      */
     public function deleteToken(string $token): array
     {
         $connection = new ConnectionDB();
         $cnx = $connection->connect($_ENV['DB_HOSTNAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], $_ENV['DB_DATABASE']);
         if (!$cnx) {
-            return [
-                'status' => false,
-                'message' => "Connection failed."
-            ];
+            throw new ErrorConnection('Connection failed');
         }
 
         // Verifica se o token criado já está cadastrado na lista.

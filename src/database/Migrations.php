@@ -45,10 +45,10 @@ class Migrations
 
             $stmt2 = $cnx->prepare($query_created_table_blacklist);
             $stmt2->execute();
-            return "\033[32mMigrations performed successfully.\033[0m";
+            return "\033[32mMigrations performed successfully.\033[0m\n";
         } catch (PDOException | Exception $e) {
             // Registre o erro e relance a exceção
-            error_log("\033[31m".$e->getMessage()."\033[0m");
+            error_log("\033[31m".$e->getMessage()."\033[0m\n");
             die;
         }
 
