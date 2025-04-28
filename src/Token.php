@@ -2,9 +2,11 @@
 
 namespace AuthToken;
 
+use AuthToken\exception\SecretNotFound;
 use Dotenv;
 use AuthToken\database\ConnectionDB;
 use Exception;
+use AuthToken\exception\ErrorConnection;
 
 // Cria uma instância do Dotenv
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
@@ -21,6 +23,7 @@ class Token extends Base64 {
      * @param $password - Password
      * @param $userID - User ID
      * @return array
+     * @throws SecretNotFound|ErrorConnection
      */
     public function generateToken(string $user, string $password, int|string $userID): array
     {
@@ -33,7 +36,7 @@ class Token extends Base64 {
         } catch (Exception $ex) {
             return [
                 'status' => false,
-                'message' => "Failed to generate token",
+                'message' => $ex->getMessage(),
             ];
         }
 
@@ -46,13 +49,11 @@ class Token extends Base64 {
         ];
 
         $path = __DIR__ . '/secret/secret.txt';
-        $file= fopen($path, 'r');
+        $file= @fopen($path, 'r');
         if (!$file) {
-            return [
-                'status' => false,
-                'message' => "The secret does not exist or is not a regular secret.",
-            ];
+            throw new SecretNotFound('Secret file not found');
         }
+
         $secret = fread($file, filesize($path));
         fclose($file);
 
@@ -65,10 +66,7 @@ class Token extends Base64 {
         $cnx = $connection->connect($_ENV['DB_HOSTNAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], $_ENV['DB_DATABASE']);
 
         if (!$cnx) {
-            return [
-                'status' => false,
-                'message' => "Connection failed",
-            ];
+            throw new ErrorConnection('Connection failed');
         }
 
         // Verifica se o "token" criado não está na blacklist. Caso ele esteja, outro "token" é criado
