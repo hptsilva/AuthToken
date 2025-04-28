@@ -7,6 +7,7 @@ AuthToken é um projeto PHP que implementa um sistema de autenticação baseado 
 - **Geração de Tokens**: Criação de tokens únicos com informações do usuário e assinatura segura.
 - **Validação de Tokens**: Verificação da integridade e validade dos tokens gerados.
 - **Renovação de Tokens**: Atualização de tokens expirados para prolongar sua validade.
+- **Exclusão de Tokens**: Exclusão de tokens do registro.
 - **Gerenciamento de Blacklist**: Controle de tokens inválidos para evitar reutilização maliciosa.
 - **Integração com Banco de Dados**: Armazenamento e consulta de tokens no banco de dados MariaDB.
 
