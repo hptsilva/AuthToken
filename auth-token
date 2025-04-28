@@ -1,0 +1,17 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__ . '/vendor/autoload.php';
+
+use Symfony\Component\Console\Application;
+use AuthToken\commands\SecretCommand;
+use AuthToken\commands\MigrationCommand;
+
+$application = new Application();
+$application->add(new SecretCommand());
+$application->add(new MigrationCommand());
+try {
+    $application->run();
+} catch (Exception $e) {
+    error_log($e->getMessage());
+}
