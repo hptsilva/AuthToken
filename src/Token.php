@@ -81,6 +81,7 @@ class Token extends Base64 {
         if ($connection->searchUserToken($cnx, $token, $userID)) {
             return [
                 'status' => true,
+                'code' => 200,
                 'token' => $token,
             ];
         }
@@ -88,12 +89,14 @@ class Token extends Base64 {
         if (!$connection->insertToken($cnx, $token, $userID)) {
             return [
                 'status' => false,
+                'code' => 500,
                 'message' => "Failed to insert token into database",
             ];
         }
 
         return [
             'status' => true,
+            'code' => 200,
             'token' => $token,
         ];
 

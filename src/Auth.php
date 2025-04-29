@@ -47,6 +47,7 @@ class Auth extends Base64
         if (!hash_equals($calculatedSignature, $receivedSignature)) {
             return [
                 'status' => false,
+                'code' => 400,
                 'message' => "Invalid Token."
             ];
         }
@@ -61,6 +62,7 @@ class Auth extends Base64
         if (!$resultado) {
             return [
                 'status' => false,
+                'code' => 404,
                 'message' => "Token not found."
             ];
         }
@@ -68,12 +70,14 @@ class Auth extends Base64
         if (time() - strtotime($resultado['updated_at']) > $_ENV['TIMEOUT']) {
             return [
                 'status' => false,
+                'code' => 401,
                 'message' => "Token has expired. Create another token."
             ];
         }
 
         return [
             'status' => true,
+            'code' => 200,
             'message' => "Token is valid.",
             'user_id' => $resultado['user_id'],
         ]; // Token válido, retorna os dados
@@ -102,6 +106,7 @@ class Auth extends Base64
         if(!$resultado) {
             return [
                 'status' => false,
+                'code' => 404,
                 'message' => "Token not found. Create another one."
             ];
         }
@@ -109,6 +114,7 @@ class Auth extends Base64
         if (time() - strtotime($resultado['updated_at']) > $_ENV['TIMEOUT']) {
             return [
                 'status' => false,
+                'code' => 401,
                 'message' => "Token has expired. Create another token."
             ];
         }
@@ -116,12 +122,14 @@ class Auth extends Base64
         if (!$connection->resetToken($cnx, $token)) {
             return [
                 'status' => false,
+                'code' => 400,
                 'message' => "Not possible to reset the token."
             ];
         }
 
         return [
             'status' => true,
+            'code' => 200,
             'message' => "Token successfully reset."
         ];
     }
@@ -147,6 +155,7 @@ class Auth extends Base64
         if(!$resultado) {
             return [
                 'status' => false,
+                'code' => 404,
                 'message' => "Token not found."
             ];
         }
@@ -154,12 +163,14 @@ class Auth extends Base64
         if (!$connection->deleteToken($cnx, $token)) {
             return [
                 'status' => false,
+                'code' => 400,
                 'message' => "Not possible to delete the token."
             ];
         }
 
         return [
             'status' => true,
+            'code' => 200,
             'message' => 'Token successfully deleted.'
         ];
 
