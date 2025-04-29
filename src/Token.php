@@ -8,9 +8,7 @@ use AuthToken\database\ConnectionDB;
 use Exception;
 use AuthToken\exception\ErrorConnection;
 
-// Cria uma instância do Dotenv
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-// Carrega as variáveis do arquivo .env
 $dotenv->load();
 
 class Token extends Base64 {
@@ -19,6 +17,7 @@ class Token extends Base64 {
      * Generates a token based on the provided parameters.
      * If the procedure is completed successfully, it returns a True status and the created token.
      * Otherwise, it returns a False status and an error message.
+     * Recommended to use a password hash to generate the token.
      * @param $user - Username
      * @param $password - Password
      * @param $userID - User ID

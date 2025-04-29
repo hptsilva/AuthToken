@@ -24,7 +24,7 @@ class ConnectionDB {
               ];
 
             return new PDO("mysql:host=$hostname;dbname=$database;charset=utf8mb4", $username, $password, $options);
-        } catch (PDOException $e) {
+        } catch (PDOException) {
             // Capturar erros de conexão
             return false;
         }
@@ -70,10 +70,8 @@ class ConnectionDB {
             if ($stmt->execute()) {
                 return true;
             }
-            return false;
-        } else {
-            return false;
         }
+        return false;
     }
 
     public function searchToken($cnx, $token)
@@ -109,7 +107,6 @@ class ConnectionDB {
                 $cnx->setAttribute(\PDO::ATTR_AUTOCOMMIT, true);
                 return true;
             } catch (PDOException $e) {
-                // Reverter a transação em caso de erro
                 if ($cnx->inTransaction()) {
                     $cnx->rollBack();
                     $cnx->setAttribute(\PDO::ATTR_AUTOCOMMIT, true);
@@ -131,13 +128,10 @@ class ConnectionDB {
 
         if ($stmt->execute()) {
             if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
-                return True;
-            }else
-                return False;
-        } else {
-            return false;
+                return true;
+            }
         }
-
+        return false;
     }
 
     public function resetToken($cnx, $token): bool{
@@ -149,10 +143,8 @@ class ConnectionDB {
         $stmt->bindParam(':token', $token, PDO::PARAM_STR);
         if ($stmt->execute()) {
             return true;
-        } else {
-            return false;
         }
-
+        return false;
     }
 
     public function deleteToken($cnx, $token): bool
@@ -172,7 +164,7 @@ class ConnectionDB {
             $stmt->execute();
             $cnx->commit();
             return true;
-        } catch (PDOException $e) {
+        } catch (PDOException) {
             if ($cnx->inTransaction()) {
                 $cnx->rollBack();
             }

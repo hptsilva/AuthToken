@@ -8,9 +8,7 @@ use AuthToken\exception\SecretNotFound;
 use Dotenv;
 use AuthToken\database\ConnectionDB;
 
-// Cria uma instância do Dotenv
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-// Carrega as variáveis do arquivo .env
 $dotenv->load();
 
 class Auth extends Base64
@@ -22,8 +20,7 @@ class Auth extends Base64
      * If the token is invalid, it returns a False status and an error message.
      * @param $token - Token
      * @return array
-     * @throws SecretNotFound
-     * @throws InvalidToken
+     * @throws SecretNotFound|ErrorConnection|InvalidToken
      */
     public function authenticateToken(string $token): array
     {
