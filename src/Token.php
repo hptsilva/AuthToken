@@ -50,7 +50,7 @@ class Token extends Base64 {
         $path = __DIR__ . '/secret/secret.txt';
         $file= @fopen($path, 'r');
         if (!$file) {
-            throw new SecretNotFound('Secret file not found');
+            throw new SecretNotFound('Secret key not found');
         }
 
         $secret = fread($file, filesize($path));

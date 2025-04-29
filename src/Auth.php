@@ -34,7 +34,7 @@ class Auth extends Base64
         $path = __DIR__ . '/secret/secret.txt';
         $file= @fopen($path, 'r');
         if (!$file) {
-            throw new SecretNotFound('Secret file not found.');
+            throw new SecretNotFound('Secret key not found.');
         }
         $secret = fread($file, filesize($path));
         fclose($file); 
@@ -62,8 +62,8 @@ class Auth extends Base64
         if (!$resultado) {
             return [
                 'status' => false,
-                'code' => 404,
-                'message' => "Token not found."
+                'code' => 401,
+                'message' => "Invalid Token."
             ];
         }
 
