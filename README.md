@@ -1,66 +1,66 @@
 # AuthToken
 
-AuthToken é um projeto PHP que implementa um sistema de autenticação baseado em tokens. Ele utiliza técnicas de codificação Base64URL e HMAC para gerar, validar e gerenciar tokens de forma segura. O projeto também inclui integração com um banco de dados MariaDB para armazenar tokens e gerenciar listas de tokens inválidos (blacklist).
+AuthToken is a PHP project that implements a token-based authentication system. It uses Base64URL encoding and HMAC techniques to securely generate, validate, and manage tokens. The project also includes integration with a MariaDB database to store tokens and manage invalid token lists (blacklist).
 
-## Funcionalidades
+## Features
 
-- **Geração de Tokens**: Criação de tokens únicos com informações do usuário e assinatura segura.
-- **Validação de Tokens**: Verificação da integridade e validade dos tokens gerados.
-- **Renovação de Tokens**: Atualização de tokens expirados para prolongar sua validade.
-- **Exclusão de Tokens**: Exclusão de tokens do registro.
-- **Gerenciamento de Blacklist**: Controle de tokens inválidos para evitar reutilização maliciosa.
-- **Integração com Banco de Dados**: Armazenamento e consulta de tokens no banco de dados MariaDB.
+- **Token Generation**: Creation of unique tokens with user information and secure signatures.
+- **Token Validation**: Verification of token integrity and validity.
+- **Token Renewal**: Updating expired tokens to extend their validity.
+- **Token Deletion**: Removal of tokens from the registry.
+- **Blacklist Management**: Control of invalid tokens to prevent malicious reuse.
+- **Database Integration**: Storage and querying of tokens in a MariaDB/MySQL database.
 
-## Requisitos
+## Requirements
 
-- PHP 8.0 ou superior
-- Composer para gerenciar dependências
-- Banco de dados MariaDB/MySQL
+- PHP 8.0 or higher
+- Composer for dependency management
+- MariaDB/MySQL database
 
-## Instalação
+## Installation
 
-- Clone o repositório na raíz do seu projeto:
+- Clone the repository into your project's root directory:
 ```php
 git clone https://github.com/hptsilva/AuthToken.git
 ```
-- Instale as dependências necessárias do projeto:
+- Install the project's required dependencies:
 ```php
 composer install
 ```
-- Crie o arquivo .env utilizando o arquivo .env.example como modelo.
+- Create the **.env** file using **.env.example** as a template:
 ```.env
-DB_HOSTNAME='''Nome do host'''
-DB_DATABASE='''Nome da base de dados'''
-DB_USER='''Nome do usuário que se conectará na base de dados'''
-DB_PASSWORD='''Senha do usuário'''
-TIMEOUT='''Tempo de duração do token. Tempo em segundos.'''
+DB_HOSTNAME='''Host name'''
+DB_DATABASE='''Database name'''
+DB_USER='''Database username'''
+DB_PASSWORD='''User password'''
+TIMEOUT='''Token duration in seconds'''
 ```
-- Execute o comando na raiz do projeto para gerar uma chave secreta. 
+- Run the following command in the project root to generate a secret key:
 ```php
 php auth-token secret
 ```
-- Execute o comando na raiz do projeto para realizar as migrações das tabelas.
+- Run the following command in the project root to execute table migrations:
 ```php
 php auth-token migrate
 ```
-- Instancie as classes:
+- Instantiate the classes:
 ```php
 use AuthToken\Token
 
 $token = new Token();
-$response = $token->generateToken($user, $password, $user_id); // Gerar Token
+$response = $token->generateToken($user, $password, $user_id); // Generate Token  
 ```
 ```php
 use AuthToken\Auth
 
 $auth = new Auth();
-$response = $auth->authenticateToken($token); // Autenticar token
-$response = $auth->resetToken($token); // Resetar Token
-$response = $auth->deleteToken($token) // Deletar Token
+$response = $auth->authenticateToken($token); // Authenticate token  
+$response = $auth->resetToken($token); // Reset Token 
+$response = $auth->deleteToken($token) // Delete Token 
 ```
 
-## Observações
-No arquivo composer.json do seu projeto mapeie os namespaces do AuthToken para utilizar as classes de autenticação e geração de token:
+## Notes
+In your project's **composer.json** file, map the AuthToken namespaces to use the authentication and token generation classes:
 ```php
 "autoload": {
   "psr-4": {
@@ -68,7 +68,7 @@ No arquivo composer.json do seu projeto mapeie os namespaces do AuthToken para u
   }
 },
 ```
-Feito isso, utilize o comando abaixo para regenerar o autoload do Composer do seu projeto.
+After that, run the following command to regenerate your project's Composer autoload:
 ```php
 composer dump-autoload
 ```
