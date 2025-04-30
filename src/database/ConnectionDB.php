@@ -111,7 +111,7 @@ class ConnectionDB {
                     $cnx->rollBack();
                     $cnx->setAttribute(\PDO::ATTR_AUTOCOMMIT, true);
                 }
-                die;
+                throw new PDOException($e->getMessage());
             }
         } else {
             return false;
