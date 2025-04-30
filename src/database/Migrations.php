@@ -15,9 +15,7 @@ class Migrations
     public function makeMigrations(): string
     {
 
-        // Cria uma instância do Dotenv
         $dotenv = Dotenv::createImmutable(realpath(__DIR__ . '/../'));
-        // Carrega as variáveis do arquivo .env
         $dotenv->load();
 
         $query_created_table_tokens = "CREATE TABLE tokens (
@@ -39,15 +37,12 @@ class Migrations
             return "\033[31mUnable to connect to the database.\033[0m\n";
         }
         try {
-            // Execute as queries corretamente
             $stmt1 = $cnx->prepare($query_created_table_tokens);
             $stmt1->execute();
-
             $stmt2 = $cnx->prepare($query_created_table_blacklist);
             $stmt2->execute();
             return "\033[32mMigrations performed successfully.\033[0m\n";
         } catch (PDOException | Exception $e) {
-            // Registre o erro e relance a exceção
             error_log("\033[31m".$e->getMessage()."\033[0m");
             die;
         }

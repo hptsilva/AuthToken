@@ -68,12 +68,10 @@ class Token extends Base64 {
             throw new ErrorConnection('Connection failed');
         }
 
-        // Verifica se o "token" criado não está na blacklist. Caso ele esteja, outro "token" é criado
         if (!$connection->searchBlacklistToken($cnx, $token)) {
             $this->generateToken($user, $password, $userID);
         }
 
-        // Verifica se o token criado já está cadastrado na lista.
         if($connection->searchToken($cnx, $token)) {
             $this->generateToken($user, $password, $userID);
         }

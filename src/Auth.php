@@ -24,8 +24,7 @@ class Auth extends Base64
      */
     public function authenticateToken(string $token): array
     {
-        
-        // Divide o token em partes
+
         $part = explode('.', $token);
         if (count($part) !== 2) {
             throw new InvalidToken('The structure of the token provided is not valid');
@@ -40,8 +39,7 @@ class Auth extends Base64
         fclose($file); 
 
         list($codefiedPayload, $receivedSignature) = $part;
-        
-        // Verifica a assinatura
+
         $calculatedSignature = $this->base64url_encode(hash_hmac('sha256', $codefiedPayload, $secret, true));
         
         if (!hash_equals($calculatedSignature, $receivedSignature)) {
@@ -57,13 +55,13 @@ class Auth extends Base64
         if (!$cnx) {
             throw new ErrorConnection('Connection failed');
         }
-        // Verifica se o token está cadastrado no registro
+
         $resultado = $connection->searchToken($cnx, $token);
         if (!$resultado) {
             return [
                 'status' => false,
                 'code' => 401,
-                'message' => "Invalid Token."
+                'message' => "Unauthorized."
             ];
         }
 
@@ -80,7 +78,7 @@ class Auth extends Base64
             'code' => 200,
             'message' => "Token is valid.",
             'user_id' => $resultado['user_id'],
-        ]; // Token válido, retorna os dados
+        ];
 
     }
 
@@ -101,7 +99,6 @@ class Auth extends Base64
             throw new ErrorConnection('Connection failed');
         }
 
-        // Verifica se o token criado já está cadastrado na lista.
         $resultado = $connection->searchToken($cnx, $token);
         if(!$resultado) {
             return [
@@ -150,7 +147,6 @@ class Auth extends Base64
             throw new ErrorConnection('Connection failed');
         }
 
-        // Verifica se o token criado já está cadastrado na lista.
         $resultado = $connection->searchToken($cnx, $token);
         if(!$resultado) {
             return [
