@@ -1,11 +1,11 @@
 <?php
 
-namespace AuthToken\commands;
+namespace AuthToken\Commands;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use AuthToken\database\Migrations;
+use AuthToken\Database\Migrations;
 
 class MigrationCommand extends Command
 {

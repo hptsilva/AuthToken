@@ -1,6 +1,6 @@
 <?php
 
-namespace AuthToken\database;
+namespace AuthToken\Database;
 
 use Dotenv\Dotenv;
 use PDOException;
@@ -14,7 +14,6 @@ class Migrations
 
     public function makeMigrations(): string
     {
-
         $dotenv = Dotenv::createImmutable(realpath(__DIR__ . '/../'));
         $dotenv->load();
 

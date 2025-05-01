@@ -4,8 +4,8 @@
 require __DIR__ . '/vendor/autoload.php';
 
 use Symfony\Component\Console\Application;
-use AuthToken\commands\SecretCommand;
-use AuthToken\commands\MigrationCommand;
+use AuthToken\Commands\SecretCommand;
+use AuthToken\Commands\MigrationCommand;
 
 $application = new Application();
 $application->add(new SecretCommand());

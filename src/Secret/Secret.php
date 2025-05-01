@@ -1,9 +1,16 @@
 <?php
 
-namespace  AuthToken\secret;
+namespace  AuthToken\Secret;
+
+use Random\RandomException;
 
 class Secret {
 
+    /**
+     * Generate the Secret Key.
+     * @return string
+     * @throws RandomException
+     */
     public function generateSecret(): string
     {
 
@@ -20,10 +27,9 @@ class Secret {
             $secret .= $mergedChars[$randomIndex];
         }
 
-        $file = fopen('src/secret/secret.txt', 'w');
+        $file = fopen('src/Secret/secret.txt', 'w');
         fwrite($file, $secret);
         fclose($file);
-
         return $secret;
 
     }

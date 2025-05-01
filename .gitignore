@@ -1,5 +1,5 @@
 /src/.env
 /vendor/
-/src/secret/secret.txt
+/src/Secret/secret.txt
 /.idea/
-/test/
+/Test/

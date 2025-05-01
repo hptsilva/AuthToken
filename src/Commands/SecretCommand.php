@@ -1,11 +1,11 @@
 <?php
 
-namespace AuthToken\commands;
+namespace AuthToken\Commands;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use AuthToken\secret\Secret;
+use AuthToken\Secret\Secret;
 
 class SecretCommand extends Command
 {

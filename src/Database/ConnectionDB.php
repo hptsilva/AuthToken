@@ -1,6 +1,6 @@
 <?php
 
-namespace AuthToken\database;
+namespace AuthToken\Database;
 
 use PDO;
 use PDOException;
@@ -52,7 +52,6 @@ class ConnectionDB {
 
     public function updateToken($cnx, $oldToken, $newToken, $user_id): bool
     {
-
         $query = "UPDATE tokens SET token = :token, created_at = :created_at, updated_at = :updated_at WHERE user_id = :user_id";
         $stmt = $cnx->prepare($query);
         $stmt->bindParam(':token', $newToken, PDO::PARAM_STR);
@@ -119,7 +118,6 @@ class ConnectionDB {
 
     public function searchBlacklistToken($cnx, $token): bool
     {
-
         $query = "SELECT token FROM blacklist_tokens WHERE token = (:token)";
         $stmt = $cnx->prepare($query);
 

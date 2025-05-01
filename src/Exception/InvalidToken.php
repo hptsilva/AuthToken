@@ -1,6 +1,6 @@
 <?php
 
-namespace AuthToken\exception;
+namespace AuthToken\Exception;
 use Exception;
 
 /**
