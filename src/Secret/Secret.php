@@ -27,9 +27,9 @@ class Secret {
             $secret .= $mergedChars[$randomIndex];
         }
 
-        $file = fopen('src/Secret/secret.txt', 'w');
-        fwrite($file, $secret);
-        fclose($file);
+        $key = fopen('src/Secret/secret.txt', 'w');
+        fwrite($key, $secret);
+        fclose($key);
         return $secret;
 
     }

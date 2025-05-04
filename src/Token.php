@@ -35,8 +35,8 @@ $dotenv->load();
  * - Extends the `Base64` class for Base64 URL-safe encoding.
  *
  * Exceptions:
- * - Throws `SecretNotFound` if the secret key file is missing.
- * - Throws `CorruptedSecretKey` if the secret key file is invalid or corrupted.
+ * - Throws `SecretNotFound` if the secret key is missing.
+ * - Throws `CorruptedSecretKey` if the secret key is invalid or corrupted.
  * - Throws `ErrorConnection` if the database connection fails.
  *
  * Usage:
@@ -94,8 +94,8 @@ class Token extends Base64 {
         ];
 
         $path = __DIR__ . '/Secret/secret.txt';
-        $file= @fopen($path, 'r');
-        if (!$file) {
+        $key= @fopen($path, 'r');
+        if (!$key) {
             throw new SecretNotFound('Secret key not found');
         }
 
@@ -103,8 +103,8 @@ class Token extends Base64 {
         if ($size != 64) {
             throw new CorruptedSecretKey('Secret key is corrupted');
         }
-        $secret = fread($file, $size);
-        fclose($file);
+        $secret = fread($key, $size);
+        fclose($key);
 
         $codefiedPayload = $this->base64url_encode(json_encode($payload));
         $signature = $this->base64url_encode(hash_hmac('sha256', $codefiedPayload, $secret, true));      

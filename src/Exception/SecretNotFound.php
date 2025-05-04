@@ -4,7 +4,7 @@ namespace AuthToken\Exception;
 use Exception;
 
 /**
- * The secret file was not found in src/secret/.
+ * The secret key was not found in src/secret/.
  * Use ```php auth-token secret``` to generate a secret key.
  */
 class SecretNotFound extends Exception

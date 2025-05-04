@@ -30,7 +30,7 @@ $dotenv->load();
  *
  * Exceptions:
  * - Throws `InvalidToken` if the token structure or signature is invalid.
- * - Throws `SecretNotFound` if the secret key file is missing.
+ * - Throws `SecretNotFound` if the secret key is missing.
  * - Throws `ErrorConnection` if the database connection fails.
  *
  * Methods:
@@ -85,12 +85,12 @@ class Auth extends Base64
         }
         
         $path = __DIR__ . '/Secret/secret.txt';
-        $file= @fopen($path, 'r');
-        if (!$file) {
+        $key= @fopen($path, 'r');
+        if (!$key) {
             throw new SecretNotFound('Secret key not found.');
         }
-        $secret = fread($file, filesize($path));
-        fclose($file); 
+        $secret = fread($key, filesize($path));
+        fclose($key);
 
         list($codefiedPayload, $receivedSignature) = $part;
 
