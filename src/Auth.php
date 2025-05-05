@@ -92,9 +92,9 @@ class Auth extends Base64
         $secret = fread($key, filesize($path));
         fclose($key);
 
-        list($codefiedPayload, $receivedSignature) = $part;
+        list($codifiedPayload, $receivedSignature) = $part;
 
-        $calculatedSignature = $this->base64url_encode(hash_hmac('sha256', $codefiedPayload, $secret, true));
+        $calculatedSignature = $this->base64url_encode(hash_hmac('sha256', $codifiedPayload, $secret, true));
         
         if (!hash_equals($calculatedSignature, $receivedSignature)) {
             return [
@@ -110,8 +110,8 @@ class Auth extends Base64
             throw new ErrorConnection('Connection failed');
         }
 
-        $resultado = $connection->searchToken($cnx, $token);
-        if (!$resultado) {
+        $result = $connection->searchToken($cnx, $token);
+        if (!$result) {
             return [
                 'status' => false,
                 'code' => 401,
@@ -119,7 +119,7 @@ class Auth extends Base64
             ];
         }
 
-        if (time() - strtotime($resultado['updated_at']) > $_ENV['TIMEOUT']) {
+        if (time() - strtotime($result['updated_at']) > $_ENV['TIMEOUT']) {
             return [
                 'status' => false,
                 'code' => 401,
@@ -131,7 +131,7 @@ class Auth extends Base64
             'status' => true,
             'code' => 200,
             'message' => "Token is valid.",
-            'user_id' => $resultado['user_id'],
+            'user_id' => $result['user_id'],
         ];
 
     }
@@ -153,8 +153,8 @@ class Auth extends Base64
             throw new ErrorConnection('Connection failed');
         }
 
-        $resultado = $connection->searchToken($cnx, $token);
-        if(!$resultado) {
+        $result = $connection->searchToken($cnx, $token);
+        if(!$result) {
             return [
                 'status' => false,
                 'code' => 404,
@@ -162,7 +162,7 @@ class Auth extends Base64
             ];
         }
 
-        if (time() - strtotime($resultado['updated_at']) > $_ENV['TIMEOUT']) {
+        if (time() - strtotime($result['updated_at']) > $_ENV['TIMEOUT']) {
             return [
                 'status' => false,
                 'code' => 401,
