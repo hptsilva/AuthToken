@@ -3,6 +3,7 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
+use AuthToken\Commands\RollbackCommand;
 use Symfony\Component\Console\Application;
 use AuthToken\Commands\SecretCommand;
 use AuthToken\Commands\MigrationCommand;
@@ -10,6 +11,7 @@ use AuthToken\Commands\MigrationCommand;
 $application = new Application();
 $application->add(new SecretCommand());
 $application->add(new MigrationCommand());
+$application->add(new RollbackCommand());
 try {
     $application->run();
 } catch (Exception $e) {

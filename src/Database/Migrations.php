@@ -2,9 +2,13 @@
 
 namespace AuthToken\Database;
 
+use AuthToken\Exception\ErrorConnection;
 use Dotenv\Dotenv;
 use PDOException;
 use Exception;
+use PDO;
+use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Make the migrations
@@ -12,10 +16,36 @@ use Exception;
 class Migrations
 {
 
-    public function makeMigrations(): string
+    /**
+     * @throws ErrorConnection
+     */
+    public function makeMigrations(OutputInterface $output): Table|string
     {
         $dotenv = Dotenv::createImmutable(realpath(__DIR__ . '/../'));
         $dotenv->load();
+
+        $database = $_ENV['DB_DATABASE'];
+        $query_verify_database = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '$database'";
+
+        $host = $_ENV['DB_HOSTNAME'];
+        $options = [
+            PDO::ATTR_EMULATE_PREPARES   => false,
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        ];
+        try {
+            $connection = new PDO("mysql:host=$host", $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], $options);
+        } catch (PDOException $e) {
+            $error = $e->getMessage();
+            return "\033[31m$error\033[0m\n";
+        }
+        $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $stmt = $connection->query($query_verify_database);
+        $table = new Table($output);
+        if (!$stmt->fetchColumn()) {
+            $query_created_database = "CREATE DATABASE {$_ENV['DB_DATABASE']}";
+            $connection->query($query_created_database);
+        }
 
         $query_created_table_tokens = "CREATE TABLE tokens (
         token VARCHAR(300) PRIMARY KEY NOT NULL,
@@ -32,18 +62,35 @@ class Migrations
 
         $connection = new ConnectionDB();
         $cnx = $connection->connect($_ENV['DB_HOSTNAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], $_ENV['DB_DATABASE']);
-        if (!$cnx) {
-            return "\033[31mUnable to connect to the database.\033[0m\n";
+        if ($cnx instanceof PDOException) {
+            $error = $cnx->getMessage();
+            throw new ErrorConnection("\033[31m$error\033[0m\n");
         }
+        $table->setHeaders(['Migrations', 'Status',]);
+        $rows = [];
+        $counter = 0;
         try {
             $stmt1 = $cnx->prepare($query_created_table_tokens);
-            $stmt1->execute();
+            if ($stmt1->execute()) {
+                $counter++;
+            };
+            $rows[] = ["tokens", "\033[32mOk\033[0m"];
             $stmt2 = $cnx->prepare($query_created_table_blacklist);
-            $stmt2->execute();
-            return "\033[32mMigrations performed successfully.\033[0m\n";
+            if ($stmt2->execute()) {
+                $counter++;
+            };
+            $rows[] = ['blacklist_tokens', "\033[32mOk\033[0m"];
+            $table->setRows($rows);
+            return $table;
         } catch (PDOException | Exception $e) {
-            error_log("\033[31m".$e->getMessage()."\033[0m");
-            die;
+            $tables = ['tokens', 'blacklist_tokens'];
+            for ($i = $counter; $i < count($tables); $i++) {
+                $rows[] = [$tables[$i], "\033[31mFailed\033[0m" ];
+            }
+            $table->setRows($rows);
+            $error = $e->getMessage();
+            echo "\033[31m$error\033[0m\n";
+            return $table;
         }
     }
 }

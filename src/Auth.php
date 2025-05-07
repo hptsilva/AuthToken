@@ -7,6 +7,7 @@ use AuthToken\Exception\InvalidToken;
 use AuthToken\Exception\SecretNotFound;
 use AuthToken\Database\ConnectionDB;
 use Dotenv;
+use PDOException;
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -106,8 +107,10 @@ class Auth extends Base64
 
         $connection = new ConnectionDB();
         $cnx = $connection->connect($_ENV['DB_HOSTNAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], $_ENV['DB_DATABASE']);
-        if (!$cnx) {
-            throw new ErrorConnection('Connection failed');
+
+        if ($cnx instanceof PDOException) {
+            $error = $cnx->getMessage();
+            throw new ErrorConnection("\033[31m$error\033[0m\n");
         }
 
         $result = $connection->searchToken($cnx, $token);
@@ -149,8 +152,10 @@ class Auth extends Base64
         $connection = new ConnectionDB();
 
         $cnx = $connection->connect($_ENV['DB_HOSTNAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], $_ENV['DB_DATABASE']);
-        if (!$cnx) {
-            throw new ErrorConnection('Connection failed');
+
+        if ($cnx instanceof PDOException) {
+            $error = $cnx->getMessage();
+            throw new ErrorConnection("\033[31m$error\033[0m\n");
         }
 
         $result = $connection->searchToken($cnx, $token);
@@ -197,8 +202,9 @@ class Auth extends Base64
     {
         $connection = new ConnectionDB();
         $cnx = $connection->connect($_ENV['DB_HOSTNAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], $_ENV['DB_DATABASE']);
-        if (!$cnx) {
-            throw new ErrorConnection('Connection failed');
+        if ($cnx instanceof PDOException) {
+            $error = $cnx->getMessage();
+            throw new ErrorConnection("\033[31m$error\033[0m\n");
         }
 
         $response = $connection->searchToken($cnx, $token);

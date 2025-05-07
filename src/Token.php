@@ -8,6 +8,7 @@ use AuthToken\Database\ConnectionDB;
 use AuthToken\Exception\ErrorConnection;
 use Exception;
 use Dotenv;
+use PDOException;
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -106,16 +107,17 @@ class Token extends Base64 {
         $secret = fread($key, $size);
         fclose($key);
 
-        $codefiedPayload = $this->base64url_encode(json_encode($payload));
-        $signature = $this->base64url_encode(hash_hmac('sha256', $codefiedPayload, $secret, true));      
+        $codifiedPayload = $this->base64url_encode(json_encode($payload));
+        $signature = $this->base64url_encode(hash_hmac('sha256', $codifiedPayload, $secret, true));
 
-        $token = "$codefiedPayload.$signature";
+        $token = "$codifiedPayload.$signature";
 
         $connection = new ConnectionDB();
         $cnx = $connection->connect($_ENV['DB_HOSTNAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], $_ENV['DB_DATABASE']);
 
-        if (!$cnx) {
-            throw new ErrorConnection('Connection failed');
+        if ($cnx instanceof PDOException) {
+            $error = $cnx->getMessage();
+            throw new ErrorConnection("\033[31m$error\033[0m\n");
         }
 
         if (!$connection->searchBlacklistToken($cnx, $token)) {

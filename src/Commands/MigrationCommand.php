@@ -2,6 +2,7 @@
 
 namespace AuthToken\Commands;
 
+use AuthToken\Exception\ErrorConnection;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -16,10 +17,19 @@ class MigrationCommand extends Command
         $this->setName('migrate')->setDescription('Initialize the application by migrating the database');
     }
 
+    /**
+     * @throws ErrorConnection
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $migration = new Migrations();
-        echo $migration->makeMigrations();
+        $response = $migration->makeMigrations($output);
+        if (is_string($response)) {
+            echo $response;
+        } else {
+            $response->render();
+        }
+
         return Command::SUCCESS;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace AuthToken\Database;
 
+use AuthToken\Exception\ErrorConnection;
 use PDO;
 use PDOException;
 
@@ -12,7 +13,7 @@ use PDOException;
  */
 class ConnectionDB {
 
-    public function connect($hostname, $username, $password, $database): false|PDO
+    public function connect($hostname, $username, $password, $database): PDOException|PDO
     {
 
         try {
@@ -24,8 +25,8 @@ class ConnectionDB {
               ];
 
             return new PDO("mysql:host=$hostname;dbname=$database;charset=utf8mb4", $username, $password, $options);
-        } catch (PDOException) {
-            return false;
+        } catch (PDOException $e) {
+            return $e;
         }
 
     }
@@ -75,15 +76,19 @@ class ConnectionDB {
     public function searchToken($cnx, $token)
     {
         $query = "SELECT token, user_id, updated_at FROM tokens WHERE token = (:token)";
-        $stmt = $cnx->prepare($query);
-
-        $stmt->bindParam(':token', $token, PDO::PARAM_STR);
-        $stmt->execute();
-        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($resultado) {
-            return $resultado;
-        } else {
-            return false;
+        try {
+            $stmt = $cnx->prepare($query);
+            $stmt->bindParam(':token', $token, PDO::PARAM_STR);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($result) {
+                return $result;
+            } else {
+                return false;
+            }
+        } catch (PDOException $e) {
+            error_log($e);
+            die;
         }
     }
 
@@ -95,12 +100,12 @@ class ConnectionDB {
 
         $stmt->bindParam(':user_id', $user_id, PDO::PARAM_STR);
         $stmt->execute();
-        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($resultado) {
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($result) {
             try {
                 $cnx->setAttribute(\PDO::ATTR_AUTOCOMMIT, false);
                 $cnx->beginTransaction();
-                $this->updateToken($cnx, $resultado['token'], $token, $resultado['user_id']);
+                $this->updateToken($cnx, $result['token'], $token, $result['user_id']);
                 $cnx->commit();
                 $cnx->setAttribute(\PDO::ATTR_AUTOCOMMIT, true);
                 return true;
@@ -116,32 +121,47 @@ class ConnectionDB {
         }
     }
 
+    /**
+     * @throws ErrorConnection
+     */
     public function searchBlacklistToken($cnx, $token): bool
     {
         $query = "SELECT token FROM blacklist_tokens WHERE token = (:token)";
-        $stmt = $cnx->prepare($query);
+        try {
+            $stmt = $cnx->prepare($query);
 
-        $stmt->bindParam(':token', $token, PDO::PARAM_STR);
+            $stmt->bindParam(':token', $token, PDO::PARAM_STR);
 
-        if ($stmt->execute()) {
-            if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
-                return true;
+            if ($stmt->execute()) {
+                if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+                    return true;
+                }
             }
+            return false;
+        }catch (PDOException $e) {
+            error_log($e);
+            die;
         }
-        return false;
+
     }
 
-    public function resetToken($cnx, $token): bool{
+    public function resetToken($cnx, $token): bool
+    {
 
         $query = "UPDATE tokens SET updated_at = :updated_at WHERE token = :token";
-        $stmt = $cnx->prepare($query);
-        $timestamp = date('Y-m-d H:i:s');
-        $stmt->bindParam(':updated_at', $timestamp, PDO::PARAM_STR);
-        $stmt->bindParam(':token', $token, PDO::PARAM_STR);
-        if ($stmt->execute()) {
-            return true;
+        try {
+            $stmt = $cnx->prepare($query);
+            $timestamp = date('Y-m-d H:i:s');
+            $stmt->bindParam(':updated_at', $timestamp, PDO::PARAM_STR);
+            $stmt->bindParam(':token', $token, PDO::PARAM_STR);
+            if ($stmt->execute()) {
+                return true;
+            }
+            return false;
+        } catch (PDOException $e) {
+            error_log($e);
+            die;
         }
-        return false;
     }
 
     public function deleteToken($cnx, $token): bool
