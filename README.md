@@ -43,6 +43,10 @@ php auth-token secret
 ```php
 php auth-token migrate
 ```
+- Run the following command in the project root to rollback table migrations:
+```php
+php auth-token rollback
+```
 - Instantiate the classes:
 ```php
 use AuthToken\Token
