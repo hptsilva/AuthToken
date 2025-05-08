@@ -72,7 +72,7 @@ After that, run the following command to regenerate your project's Composer auto
 ```php
 composer dump-autoload
 ```
-- If you need to rollback table migrations, run the following command in the project root:
+If you need to rollback table migrations, run the following command in the project root:
 ```php
 php auth-token rollback
 ```
