@@ -43,10 +43,6 @@ php auth-token secret
 ```php
 php auth-token migrate
 ```
-- Run the following command in the project root to rollback table migrations:
-```php
-php auth-token rollback
-```
 - Instantiate the classes:
 ```php
 use AuthToken\Token
@@ -75,4 +71,8 @@ In your project's **composer.json** file, map the AuthToken namespaces to use th
 After that, run the following command to regenerate your project's Composer autoload:
 ```php
 composer dump-autoload
+```
+- If you need to rollback table migrations, run the following command in the project root:
+```php
+php auth-token rollback
 ```
