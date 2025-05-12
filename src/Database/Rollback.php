@@ -2,19 +2,23 @@
 
 namespace AuthToken\Database;
 
+use AuthToken\Exception\ErrorConnection;
 use Dotenv\Dotenv;
 use PDOException;
 
 class Rollback
 {
 
+    /**
+     * @throws ErrorConnection
+     */
     public function makeRollback():string
     {
         $dotenv = Dotenv::createImmutable(realpath(__DIR__ . '/../'));
         $dotenv->load();
 
         $connection = new ConnectionDB();
-        $cnx = $connection->connect($_ENV['DB_HOSTNAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], $_ENV['DB_DATABASE']);
+        $cnx = $connection->connect();
         if ($cnx instanceof PDOException) {
             $error = $cnx->getMessage();
             return "\033[31m$error\033[0m\n";

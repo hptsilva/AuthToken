@@ -25,26 +25,34 @@ class Migrations
         $dotenv->load();
 
         $database = $_ENV['DB_DATABASE'];
-        $query_verify_database = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '$database'";
 
         $host = $_ENV['DB_HOSTNAME'];
-        $options = [
-            PDO::ATTR_EMULATE_PREPARES   => false,
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        ];
         try {
-            $connection = new PDO("mysql:host=$host", $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], $options);
+            if ($_ENV['DB_CONNECTION'] == 'mysql' || $_ENV['DB_CONNECTION'] == 'mariadb') {
+                $query_verify_database = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '$database'";
+                $options = [
+                    PDO::ATTR_EMULATE_PREPARES   => false,
+                    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                ];
+                $connection = new PDO("mysql:host=$host", $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], $options);
+                $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                $stmt = $connection->query($query_verify_database);
+                if (!$stmt->fetchColumn()) {
+                    $query_created_database = "CREATE DATABASE {$_ENV['DB_DATABASE']}";
+                    $connection->query($query_created_database);
+                }
+                $connection = new ConnectionDB();
+                $cnx = $connection->connect();
+            } else if ($_ENV['DB_CONNECTION'] == 'sqlite') {
+                $cnx = new PDO("sqlite:".__DIR__."/$database.sqlite");
+                $cnx->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            } else {
+                return "\033[31mUnknown DB connection\033[0m\n";
+            }
         } catch (PDOException $e) {
             $error = $e->getMessage();
             return "\033[31m$error\033[0m\n";
-        }
-        $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $stmt = $connection->query($query_verify_database);
-        $table = new Table($output);
-        if (!$stmt->fetchColumn()) {
-            $query_created_database = "CREATE DATABASE {$_ENV['DB_DATABASE']}";
-            $connection->query($query_created_database);
         }
 
         $query_created_table_tokens = "CREATE TABLE tokens (
@@ -60,12 +68,11 @@ class Migrations
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )";
 
-        $connection = new ConnectionDB();
-        $cnx = $connection->connect($_ENV['DB_HOSTNAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], $_ENV['DB_DATABASE']);
         if ($cnx instanceof PDOException) {
             $error = $cnx->getMessage();
             throw new ErrorConnection("\033[31m$error\033[0m\n");
         }
+        $table = new Table($output);
         $table->setHeaders(['Migrations', 'Status',]);
         $rows = [];
         $counter = 0;

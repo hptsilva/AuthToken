@@ -113,7 +113,7 @@ class Token extends Base64 {
         $token = "$codifiedPayload.$signature";
 
         $connection = new ConnectionDB();
-        $cnx = $connection->connect($_ENV['DB_HOSTNAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], $_ENV['DB_DATABASE']);
+        $cnx = $connection->connect();
 
         if ($cnx instanceof PDOException) {
             $error = $cnx->getMessage();
