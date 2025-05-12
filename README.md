@@ -1,6 +1,6 @@
 # AuthToken
 
-AuthToken is a PHP project that implements a token-based authentication system. It uses Base64URL encoding and HMAC techniques to securely generate, validate, and manage tokens. The project also includes integration with a MariaDB database to store tokens and manage invalid token lists (blacklist).
+AuthToken is a PHP project that implements a token-based authentication system. It uses Base64URL encoding and HMAC techniques to securely generate, validate, and manage tokens. The project also includes integration with a MariaDB|MySQL or SQLite database to store tokens and manage invalid token lists (blacklist).
 
 ## Features
 
@@ -9,13 +9,13 @@ AuthToken is a PHP project that implements a token-based authentication system. 
 - **Token Renewal**: Updating expired tokens to extend their validity.
 - **Token Deletion**: Removal of tokens from the registry.
 - **Blacklist Management**: Control of invalid tokens to prevent malicious reuse.
-- **Database Integration**: Storage and querying of tokens in a MariaDB/MySQL database.
+- **Database Integration**: Storage and querying of tokens in a MariaDB/MySQL or SQLite database.
 
 ## Requirements
 
 - PHP 8.0 or higher
 - Composer for dependency management
-- MariaDB/MySQL database
+- MariaDB/MySQL or SQLite database
 
 ## Installation
 
