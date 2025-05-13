@@ -3,4 +3,4 @@
 /src/Secret/secret.txt
 /.idea/
 /Test/
-/src/Database/auth_token.sqlite
+/src/Database/*.sqlite
