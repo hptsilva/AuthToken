@@ -2,11 +2,13 @@
 
 namespace AuthToken;
 
+use AuthToken\Exception\CorruptedSecretKey;
 use AuthToken\Exception\ErrorConnection;
 use AuthToken\Exception\InvalidToken;
 use AuthToken\Exception\SecretNotFound;
 use AuthToken\Database\ConnectionDB;
 use Dotenv;
+use Exception;
 use PDOException;
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
@@ -33,8 +35,11 @@ $dotenv->load();
  * - Throws `InvalidToken` if the token structure or signature is invalid.
  * - Throws `SecretNotFound` if the secret key is missing.
  * - Throws `ErrorConnection` if the database connection fails.
+ * - Throes `CorruptedSecretKey` If the secret key does not have 64 characters.
  *
  * Methods:
+ * - `generateToken(string $user, string $password, int|string $userID): array`:
+ *   Generates a token based on the provided parameters. Returns a status, HTTP code and the token created.
  * - `authenticateToken(string $token): array`:
  *   Authenticates the provided token. Returns a status, HTTP code, and a message or user ID.
  * - `resetToken(string $token): array`:
@@ -70,38 +75,123 @@ class Auth extends Base64
 {
 
     /**
+     * Generates a token based on the provided parameters.
+     * If the procedure is completed successfully, it returns a True status, an HTTP status code and the created token.
+     * Otherwise, it returns a False status, an HTTP status code and an error message.
+     * Recommended to use a password hash to generate the token.
+     * @param string $user
+     * @param string $password
+     * @param int|string $userID
+     * @return array
+     * @throws SecretNotFound|ErrorConnection|CorruptedSecretKey
+     */
+    public function generateToken(string $user, string $password, int|string $userID): array
+    {
+
+        $timestamp = time();
+        $min = (int) pow(10, 10 -1);
+        $max = (int) pow(10, 10) - 1;
+        try{
+            $randomNumber = random_int($min, $max);
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'code' => 500,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+        $payload = [
+            'user' => $user,
+            'passwordHash' => $password,
+            'userID' => $userID,
+            'timestamp' => $timestamp,
+            'randomNumber' => $randomNumber
+        ];
+
+        $path = __DIR__ . '/Secret/secret.txt';
+        $key= @fopen($path, 'r');
+        if (!$key) {
+            throw new SecretNotFound('Secret key not found');
+        }
+
+        $size = filesize($path);
+        if ($size != 64) {
+            throw new CorruptedSecretKey('Secret key is corrupted');
+        }
+        $secret = fread($key, $size);
+        fclose($key);
+
+        $codifiedPayload = $this->base64url_encode(json_encode($payload));
+        $signature = $this->base64url_encode(hash_hmac('sha256', $codifiedPayload, $secret, true));
+
+        $token = "$codifiedPayload.$signature";
+
+        $connection = new ConnectionDB();
+        $cnx = $connection->connect();
+
+        if ($cnx instanceof PDOException) {
+            $error = $cnx->getMessage();
+            throw new ErrorConnection("\033[31m$error\033[0m\n");
+        }
+
+        if (!$connection->searchBlacklistToken($cnx, $token)) {
+            $this->generateToken($user, $password, $userID);
+        }
+
+        if($connection->searchToken($cnx, $token)) {
+            $this->generateToken($user, $password, $userID);
+        }
+
+        if ($connection->searchUserToken($cnx, $token, $userID)) {
+            return [
+                'status' => true,
+                'code' => 200,
+                'token' => $token,
+            ];
+        }
+
+        if (!$connection->insertToken($cnx, $token, $userID)) {
+            return [
+                'status' => false,
+                'code' => 500,
+                'message' => "Failed to insert token into database",
+            ];
+        }
+
+        return [
+            'status' => true,
+            'code' => 200,
+            'token' => $token,
+        ];
+
+    }
+
+    /**
      * Authenticates the provided token.
      * If the token is valid, it returns a True status, an HTTP status code, a confirmation message and the user ID.
      * If the token is invalid, it returns a False status, an HTTP status code and an error message.
      * @param string $token
      * @return array
-     * @throws SecretNotFound|ErrorConnection|InvalidToken
+     * @throws ErrorConnection
      */
     public function authenticateToken(string $token): array
     {
 
-        $part = explode('.', $token);
-        if (count($part) !== 2) {
-            throw new InvalidToken('The structure of the token provided is not valid');
-        }
-        
-        $path = __DIR__ . '/Secret/secret.txt';
-        $key= @fopen($path, 'r');
-        if (!$key) {
-            throw new SecretNotFound('Secret key not found.');
-        }
-        $secret = fread($key, filesize($path));
-        fclose($key);
-
-        list($codifiedPayload, $receivedSignature) = $part;
-
-        $calculatedSignature = $this->base64url_encode(hash_hmac('sha256', $codifiedPayload, $secret, true));
-        
-        if (!hash_equals($calculatedSignature, $receivedSignature)) {
+        $tokenObj = new Token();
+        try {
+            if (!$tokenObj->validateToken($token)) {
+                return [
+                    'status' => false,
+                    'code' => 400,
+                    'message' => "Invalid Token."
+                ];
+            }
+        } catch (InvalidToken|SecretNotFound $e) {
             return [
                 'status' => false,
-                'code' => 400,
-                'message' => "Invalid Token."
+                'code' => 500,
+                'message' => $e->getMessage()
             ];
         }
 
@@ -149,8 +239,25 @@ class Auth extends Base64
      */
     public function resetToken(string $token): array
     {
-        $connection = new ConnectionDB();
 
+        $tokenObj = new Token();
+        try {
+            if (!$tokenObj->validateToken($token)) {
+                return [
+                    'status' => false,
+                    'code' => 400,
+                    'message' => "Invalid Token."
+                ];
+            }
+        } catch (InvalidToken|SecretNotFound $e) {
+            return [
+                'status' => false,
+                'code' => 500,
+                'message' => $e->getMessage()
+            ];
+        }
+
+        $connection = new ConnectionDB();
         $cnx = $connection->connect();
 
         if ($cnx instanceof PDOException) {

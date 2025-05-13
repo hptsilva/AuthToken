@@ -43,20 +43,15 @@ php auth-token secret
 ```php
 php auth-token migrate
 ```
-- Instantiate the classes:
-```php
-use AuthToken\Token
-
-$token = new Token();
-$response = $token->generateToken($user, $password, $user_id); // Generate Token  
-```
+- Instantiate the class:
 ```php
 use AuthToken\Auth
 
 $auth = new Auth();
+$response = $token->generateToken($user, $password, $user_id); // Generate Token 
 $response = $auth->authenticateToken($token); // Authenticate token  
 $response = $auth->resetToken($token); // Reset Token 
-$response = $auth->deleteToken($token) // Delete Token 
+$response = $auth->deleteToken($token) // Delete Token
 ```
 
 ## Notes

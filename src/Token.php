@@ -2,13 +2,9 @@
 
 namespace AuthToken;
 
-use AuthToken\Exception\CorruptedSecretKey;
+use AuthToken\Exception\InvalidToken;
 use AuthToken\Exception\SecretNotFound;
-use AuthToken\Database\ConnectionDB;
-use AuthToken\Exception\ErrorConnection;
-use Exception;
 use Dotenv;
-use PDOException;
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -60,96 +56,45 @@ $dotenv->load();
 class Token extends Base64 {
 
     /**
-     * Generates a token based on the provided parameters.
-     * If the procedure is completed successfully, it returns a True status, an HTTP status code and the created token.
-     * Otherwise, it returns a False status, an HTTP status code and an error message.
-     * Recommended to use a password hash to generate the token.
-     * @param string $user
-     * @param string $password
-     * @param int|string $userID
-     * @return array
-     * @throws SecretNotFound|ErrorConnection|CorruptedSecretKey
+     * The validateToken method is responsible for verifying the validity of a provided token. It ensures that the token was generated using the correct secret key. The method performs the following steps:
+     *
+     * * Splits the token into its payload and signature parts.
+     * * Validates the token structure to ensure it contains exactly two parts.
+     * * Reads the secret key.
+     * * Recalculates the signature using the payload and the secret key.
+     * * Compares the recalculated signature with the received signature using a timing-attack-safe comparison (hash_equals).
+     * * If the token is valid, the method returns true. Otherwise, it returns false.
+     *
+     * Exceptions:
+     * * InvalidToken: Thrown if the token structure is invalid (does not contain exactly two parts).
+     * * SecretNotFound: Thrown if the secret key file is missing or cannot be opened.
+     * @throws InvalidToken
+     * @throws SecretNotFound
      */
-    public function generateToken(string $user, string $password, int|string $userID): array
+    public function validateToken(string $token): bool
     {
-
-        $timestamp = time();
-        $min = (int) pow(10, 10 -1);
-        $max = (int) pow(10, 10) - 1;
-        try{
-            $randomNumber = random_int($min, $max);
-        } catch (Exception $ex) {
-            return [
-                'status' => false,
-                'code' => 500,
-                'message' => $ex->getMessage(),
-            ];
+        $part = explode('.', $token);
+        if (count($part) !== 2) {
+            throw new InvalidToken('The structure of the token provided is not valid');
         }
-
-        $payload = [
-            'user' => $user,
-            'passwordHash' => $password,
-            'userID' => $userID,
-            'timestamp' => $timestamp,
-            'randomNumber' => $randomNumber
-        ];
 
         $path = __DIR__ . '/Secret/secret.txt';
         $key= @fopen($path, 'r');
         if (!$key) {
-            throw new SecretNotFound('Secret key not found');
+            throw new SecretNotFound('Secret key not found.');
         }
-
-        $size = filesize($path);
-        if ($size != 64) {
-            throw new CorruptedSecretKey('Secret key is corrupted');
-        }
-        $secret = fread($key, $size);
+        $secret = fread($key, filesize($path));
         fclose($key);
 
-        $codifiedPayload = $this->base64url_encode(json_encode($payload));
-        $signature = $this->base64url_encode(hash_hmac('sha256', $codifiedPayload, $secret, true));
+        list($codifiedPayload, $receivedSignature) = $part;
 
-        $token = "$codifiedPayload.$signature";
+        $calculatedSignature = $this->base64url_encode(hash_hmac('sha256', $codifiedPayload, $secret, true));
 
-        $connection = new ConnectionDB();
-        $cnx = $connection->connect();
-
-        if ($cnx instanceof PDOException) {
-            $error = $cnx->getMessage();
-            throw new ErrorConnection("\033[31m$error\033[0m\n");
+        if (!hash_equals($calculatedSignature, $receivedSignature)) {
+            return false;
         }
 
-        if (!$connection->searchBlacklistToken($cnx, $token)) {
-            $this->generateToken($user, $password, $userID);
-        }
-
-        if($connection->searchToken($cnx, $token)) {
-            $this->generateToken($user, $password, $userID);
-        }
-
-        if ($connection->searchUserToken($cnx, $token, $userID)) {
-            return [
-                'status' => true,
-                'code' => 200,
-                'token' => $token,
-            ];
-        }
-
-        if (!$connection->insertToken($cnx, $token, $userID)) {
-            return [
-                'status' => false,
-                'code' => 500,
-                'message' => "Failed to insert token into database",
-            ];
-        }
-
-        return [
-            'status' => true,
-            'code' => 200,
-            'token' => $token,
-        ];
-
+        return true;
     }
 
 }
