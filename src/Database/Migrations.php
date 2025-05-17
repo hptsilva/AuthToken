@@ -29,7 +29,7 @@ class Migrations
         $host = $_ENV['DB_HOSTNAME'];
         try {
             if ($_ENV['DB_CONNECTION'] == 'mysql' || $_ENV['DB_CONNECTION'] == 'mariadb') {
-                $query_verify_database = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '$database'";
+                $queryVerifyDatabase = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '$database'";
                 $options = [
                     PDO::ATTR_EMULATE_PREPARES   => false,
                     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
@@ -37,7 +37,7 @@ class Migrations
                 ];
                 $connection = new PDO("mysql:host=$host", $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], $options);
                 $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                $stmt = $connection->query($query_verify_database);
+                $stmt = $connection->query($queryVerifyDatabase);
                 if (!$stmt->fetchColumn()) {
                     $query_created_database = "CREATE DATABASE {$_ENV['DB_DATABASE']}";
                     $connection->query($query_created_database);
@@ -55,14 +55,19 @@ class Migrations
             return "\033[31m$error\033[0m\n";
         }
 
-        $query_created_table_tokens = "CREATE TABLE tokens (
+        if ($_ENV['USER_TYPE'] !== 'int' && $_ENV['USER_TYPE'] !== 'INT' && !preg_match('/^varchar\(\d+\)$/', $_ENV['USER_TYPE']) && !preg_match('/^VARCHAR\(\d+\)$/', $_ENV['USER_TYPE'])) {
+            throw new ErrorConnection("\033[31mUnknown USER_TYPE\033[0m\n");
+        }
+
+        $type = $_ENV['USER_TYPE'];
+        $queryCreatedTableTokens = "CREATE TABLE tokens (
         token VARCHAR(300) PRIMARY KEY NOT NULL,
-        user_id int NOT NULL,
+        user_id $type NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
         )";
 
-        $query_created_table_blacklist = "CREATE TABLE blacklist_tokens (
+        $queryCreatedTableBlacklist = "CREATE TABLE blacklist_tokens (
         token VARCHAR(300) PRIMARY KEY NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -77,12 +82,12 @@ class Migrations
         $rows = [];
         $counter = 0;
         try {
-            $stmt1 = $cnx->prepare($query_created_table_tokens);
+            $stmt1 = $cnx->prepare($queryCreatedTableTokens);
             if ($stmt1->execute()) {
                 $counter++;
             };
             $rows[] = ["tokens", "\033[32mOk\033[0m"];
-            $stmt2 = $cnx->prepare($query_created_table_blacklist);
+            $stmt2 = $cnx->prepare($queryCreatedTableBlacklist);
             if ($stmt2->execute()) {
                 $counter++;
             };

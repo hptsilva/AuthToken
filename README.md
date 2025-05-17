@@ -29,11 +29,13 @@ composer install
 ```
 - Create the **.env** file using **.env.example** as a template:
 ```.env
+DB_CONNECTION='''Type of database connection (e.g., mysql, mariadb, sqlite).'''
 DB_HOSTNAME='''Host name'''
 DB_DATABASE='''Database name'''
 DB_USER='''Database username'''
 DB_PASSWORD='''User password'''
 TIMEOUT='''Token duration in seconds'''
+USER_TYPE='''Type of the user ID value (e.g., INT or VARCHAR)'''
 ```
 - Run the following command in the project root to generate a secret key:
 ```php
