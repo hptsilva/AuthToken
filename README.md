@@ -50,7 +50,7 @@ php auth-token migrate
 use AuthToken\Auth
 
 $auth = new Auth();
-$response = $token->generateToken($user, $password, $user_id); // Generate Token 
+$response = $auth->generateToken($user, $password, $user_id); // Generate Token 
 $response = $auth->authenticateToken($token); // Authenticate token  
 $response = $auth->resetToken($token); // Reset Token 
 $response = $auth->deleteToken($token) // Delete Token
