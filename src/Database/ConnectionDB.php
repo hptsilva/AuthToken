@@ -157,6 +157,9 @@ class ConnectionDB {
 
     }
 
+    /**
+     * @throws PDOException
+     */
     public function resetToken($cnx, $token): bool
     {
 
