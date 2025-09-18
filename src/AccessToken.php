@@ -1,0 +1,75 @@
+<?php
+
+namespace AuthToken;
+
+use AuthToken\Exception\InvalidToken;
+use AuthToken\Exception\SecretNotFound;
+use DateTimeImmutable;
+
+class AccessToken extends Base64
+{
+    private string $secret;
+
+    /**
+     * @throws SecretNotFound
+     */
+    public function __construct()
+    {
+        $path = __DIR__ . '/Secret/secret.txt';
+        if (!file_exists($path)) {
+            throw new SecretNotFound('Secret key not found.');
+        }
+        $this->secret = file_get_contents($path);
+    }
+
+    /**
+     * Generate an Access Token.
+     */
+    public function generate(int|string $userId): string
+    {
+        $header = $this->base64url_encode(json_encode(['alg' => 'HS256', 'typ' => 'JWT']));
+
+        $issuedAt = new DateTimeImmutable();
+        $expire = $issuedAt->modify($_ENV['ACCESS_TOKEN_TIMEOUT'] ?? '+15 minutes')->getTimestamp();
+
+        $payload = $this->base64url_encode(json_encode([
+            'iat' => $issuedAt->getTimestamp(), // Issued at: time when the token was generated
+            'nbf' => $issuedAt->getTimestamp(), // Not before
+            'exp' => $expire,                  // Expire
+            'sub' => $userId,                  // Subject (user ID)
+        ]));
+
+        $signature = $this->base64url_encode(hash_hmac('sha256', "$header.$payload", $this->secret, true));
+
+        return "$header.$payload.$signature";
+    }
+
+    /**
+     * Validates an Access Token in a stateless manner.
+     * Returns the decoded payload on success, or false on failure.
+     */
+    public function validate(string $token): false|array
+    {
+        $parts = explode('.', $token);
+        if (count($parts) !== 3) {
+            return false; // Invalid structure
+        }
+
+        list($header, $payload, $receivedSignature) = $parts;
+
+        $calculatedSignature = $this->base64url_encode(hash_hmac('sha256', "$header.$payload", $this->secret, true));
+
+        if (!hash_equals($calculatedSignature, $receivedSignature)) {
+            return false; // Invalid signature
+        }
+
+        $decodedPayload = json_decode($this->base64url_decode($payload), true);
+
+        // Check if the token has expired
+        if ($decodedPayload['exp'] < time()) {
+            return false;
+        }
+
+        return $decodedPayload;
+    }
+}

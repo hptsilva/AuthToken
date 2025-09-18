@@ -1,59 +1,123 @@
 # AuthToken
 
-AuthToken is a PHP project that implements a token-based authentication system. It uses Base64URL encoding and HMAC techniques to securely generate, validate, and manage tokens. The project also includes integration with a MariaDB|MySQL or SQLite database to store tokens and manage invalid token lists (blacklist).
+AuthToken is a modern PHP project that implements a secure token-based authentication system. Ideal for modern APIs and web applications.
+
+The library uses JSON Web Tokens (JWT) for short-lived, verifiable access tokens and cryptographically secure random strings for long-lived refresh tokens, which are stored in a database.
 
 ## Features
 
-- **Token Generation**: Creation of unique tokens with user information and secure signatures.
-- **Token Validation**: Verification of token integrity and validity.
-- **Token Renewal**: Updating expired tokens to extend their validity.
-- **Token Deletion**: Removal of tokens from the registry.
-- **Blacklist Management**: Control of invalid tokens to prevent malicious reuse.
-- **Database Integration**: Storage and querying of tokens in a MariaDB/MySQL or SQLite database.
+- **Secure Authentication Flow**: Generates a pair of tokens: a short-lived JWT Access Token and a long-lived, database-backed Refresh Token.
+- **Stateless JWT Access Tokens**: Fast, stateless validation of access tokens using cryptographic signatures (HMAC SHA-256), eliminating the need for a database lookup on every request.
+- **Stateful Refresh Tokens**: Secure, long-lived tokens stored in the database, used to obtain new access tokens when they expire.
+- **Token Rotation**: For enhanced security, using a refresh token automatically invalidates it and issues a new one, preventing token reuse.
+- **Secure Logout**: A clear logout mechanism that revokes the user's session by deleting the corresponding refresh token from the database.
+- **Database Integration**: Storage and management of refresh tokens in a MariaDB/MySQL or SQLite database.
 
 ## Requirements
 
-- PHP 8.0 or higher
+- PHP 8.2 or higher
 - Composer for dependency management
 - MariaDB/MySQL or SQLite database
 
 ## Installation
 
-- Clone the repository into your project's root directory:
-```php
-git clone https://github.com/hptsilva/AuthToken.git
-```
-- Install the project's required dependencies:
-```php
-composer install
-```
-- Create the **.env** file using **.env.example** as a template:
-```.env
-DB_CONNECTION='''Type of database connection (e.g., mysql, mariadb, sqlite).'''
-DB_HOSTNAME='''Host name'''
-DB_DATABASE='''Database name'''
-DB_USER='''Database username'''
-DB_PASSWORD='''User password'''
-TIMEOUT='''Token duration in seconds'''
-USER_TYPE='''Type of the user ID value (e.g., INT or VARCHAR)'''
-```
-- Run the following command in the project root to generate a secret key:
-```php
-php auth-token secret
-```
-- Run the following command in the project root to execute table migrations:
-```php
-php auth-token migrate
-```
-- Instantiate the class:
-```php
-use AuthToken\Auth
+1.  Clone the repository into your project's root directory:
+    ```bash
+    git clone [https://github.com/hptsilva/AuthToken.git](https://github.com/hptsilva/AuthToken.git)
+    ```
+2.  Install the project's required dependencies:
+    ```bash
+    composer install
+    ```
+3.  Create the **.env** file in your project root using **.env.example** as a template and fill in your details:
+    ```.env
+    DB_CONNECTION=mysql # Type of database connection (e.g., mysql, mariadb, sqlite).
+    DB_HOSTNAME=localhost # Host name
+    DB_DATABASE=auth # Database name
+    DB_USER=root # Database username
+    DB_PASSWORD=secret # User password
+    USER_TYPE=INT # Type of the user ID value (e.g., INT or VARCHAR(255))
+    
+    # Access Token lifetime (PHP DateInterval format).
+    ACCESS_TOKEN_TIMEOUT='+15 minutes'
+    
+    # Refresh Token lifetime (PHP DateInterval format).
+    REFRESH_TOKEN_INTERVAL='P7D'
+    ```
+4.  Run the following command in the project root to generate a secret key (used for signing JWTs):
+    ```bash
+    php auth-token secret
+    ```
+5.  Run the following command in the project root to execute table migrations:
+    ```bash
+    php auth-token migrate
+    ```
 
+## Usage
+
+The new workflow separates login, authentication, session refreshing, and logout into distinct methods. Here is a complete usage example:
+
+```php
+<?php
+
+require __DIR__ . '/vendor/autoload.php';
+
+use AuthToken\Auth;
+
+// It's recommended to instantiate the Auth class once and reuse it.
 $auth = new Auth();
-$response = $auth->generateToken($user, $password, $user_id); // Generate Token 
-$response = $auth->authenticateToken($token); // Authenticate token  
-$response = $auth->resetToken($token); // Reset Token 
-$response = $auth->deleteToken($token) // Delete Token
+
+// --- 1. User Login ---
+// After you verify the user's password, call login() with their user ID.
+$userId = 123;
+$loginResponse = $auth->login($userId);
+
+if (!$loginResponse['status']) {
+    die("Login failed!");
+}
+
+// Store both tokens securely on the client-side.
+$accessToken = $loginResponse['access_token'];
+$refreshToken = $loginResponse['refresh_token'];
+
+echo "Login successful!\n";
+
+
+// --- 2. Authenticating an API Request ---
+// For each request to a protected endpoint, validate the Access Token.
+$authResponse = $auth->authenticate($accessToken);
+
+if ($authResponse['status']) {
+    echo "Access granted for user ID: " . $authResponse['user_id'] . "\n";
+} else {
+    // This block is executed if the Access Token is expired or invalid.
+    echo "Access token is invalid or has expired. Attempting to refresh...\n";
+
+    // --- 3. Refreshing the Session ---
+    // Use the Refresh Token to get a new pair of tokens.
+    $refreshResponse = $auth->refresh($refreshToken);
+
+    if ($refreshResponse['status']) {
+        // Update the tokens on the client-side with the new ones.
+        $accessToken = $refreshResponse['access_token'];
+        $refreshToken = $refreshResponse['refresh_token'];
+        echo "Tokens refreshed successfully. You can now retry the original request.\n";
+    } else {
+        // If the refresh token is also invalid or expired, the user must log in again.
+        echo "Refresh token is invalid. Please log in again.\n";
+        // Redirect to login page.
+    }
+}
+
+
+// --- 4. User Logout ---
+// To log out, invalidate the session by deleting the Refresh Token.
+$logoutResponse = $auth->logout($refreshToken);
+
+if ($logoutResponse['status']) {
+    echo "Logout successful.\n";
+}
+
 ```
 
 ## Notes

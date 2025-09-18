@@ -14,6 +14,7 @@ use PDOException;
 class ConnectionDB {
 
     /**
+     * Conecta no banco de dados
      * @throws ErrorConnection
      */
     public function connect(): PDOException|PDO
@@ -43,164 +44,45 @@ class ConnectionDB {
         }
     }
 
-    public function insertToken($cnx, $token, $user_id): bool
+    public function insertRefreshToken($cnx, string $token, $userId, string $expiresAt): bool
     {
-
-        $query = "INSERT INTO tokens (token, user_id, created_at, updated_at) VALUES (:token, :user_id, :created_at, :updated_at)";
+        $query = "INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES (:user_id, :token, :expires_at)";
         $stmt = $cnx->prepare($query);
 
+        $stmt->bindParam(':user_id', $userId);
+        $stmt->bindParam(':token', $token);
+        $stmt->bindParam(':expires_at', $expiresAt);
+
+        return $stmt->execute();
+    }
+
+    public function findRefreshToken($cnx, string $token)
+    {
+        $query = "SELECT user_id, token, expires_at FROM refresh_tokens WHERE token = :token";
+        $stmt = $cnx->prepare($query);
         $stmt->bindParam(':token', $token, PDO::PARAM_STR);
-        $stmt->bindParam(':user_id', $user_id, PDO::PARAM_STR);
-        $timestamp = date('Y-m-d H:i:s');
-        $stmt->bindParam(':created_at', $timestamp, PDO::PARAM_STR);
-        $stmt->bindParam(':updated_at', $timestamp, PDO::PARAM_STR);
-
-        if ($stmt->execute()) {
-            return true;
-        } else {
-            return false;
-        }
-
-    }
-
-    public function updateToken($cnx, $oldToken, $newToken, $user_id): bool
-    {
-        $query = "UPDATE tokens SET token = :token, created_at = :created_at, updated_at = :updated_at WHERE user_id = :user_id";
-        $stmt = $cnx->prepare($query);
-        $stmt->bindParam(':token', $newToken, PDO::PARAM_STR);
-        $stmt->bindParam(':user_id', $user_id, PDO::PARAM_STR);
-        $timestamp = date('Y-m-d H:i:s');
-        $stmt->bindParam(':created_at', $timestamp, PDO::PARAM_STR);
-        $stmt->bindParam(':updated_at', $timestamp, PDO::PARAM_STR);
-        if ($stmt->execute()) {
-            $query = "INSERT INTO blacklist_tokens (token, created_at, updated_at) VALUES (:token, :created_at, :updated_at)";
-            $stmt = $cnx->prepare($query);
-            $stmt->bindParam(':token', $oldToken, PDO::PARAM_STR);
-            $stmt->bindParam(':created_at', $timestamp, PDO::PARAM_STR);
-            $stmt->bindParam(':updated_at', $timestamp, PDO::PARAM_STR);
-            if ($stmt->execute()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public function searchToken($cnx, $token)
-    {
-        $query = "SELECT token, user_id, updated_at FROM tokens WHERE token = (:token)";
-        try {
-            $stmt = $cnx->prepare($query);
-            $stmt->bindParam(':token', $token, PDO::PARAM_STR);
-            $stmt->execute();
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($result) {
-                return $result;
-            } else {
-                return false;
-            }
-        } catch (PDOException $e) {
-            error_log($e);
-            die;
-        }
-    }
-
-    public function searchUserToken($cnx, $token, $user_id): bool|array
-    {
-
-        $query = "SELECT token, user_id FROM tokens WHERE user_id = (:user_id)";
-        $stmt = $cnx->prepare($query);
-
-        $stmt->bindParam(':user_id', $user_id, PDO::PARAM_STR);
         $stmt->execute();
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($result) {
-            try {
-                $cnx->setAttribute(\PDO::ATTR_AUTOCOMMIT, false);
-                $cnx->beginTransaction();
-                $this->updateToken($cnx, $result['token'], $token, $result['user_id']);
-                $cnx->commit();
-                $cnx->setAttribute(\PDO::ATTR_AUTOCOMMIT, true);
-                return true;
-            } catch (PDOException $e) {
-                if ($cnx->inTransaction()) {
-                    $cnx->rollBack();
-                    $cnx->setAttribute(\PDO::ATTR_AUTOCOMMIT, true);
-                }
-                throw new PDOException($e->getMessage());
-            }
-        } else {
-            return false;
-        }
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * @throws ErrorConnection
-     */
-    public function searchBlacklistToken($cnx, $token): bool
+    public function deleteRefreshToken($cnx, string $token): bool
     {
-        $query = "SELECT token FROM blacklist_tokens WHERE token = (:token)";
-        try {
-            $stmt = $cnx->prepare($query);
+        $query = "DELETE FROM refresh_tokens WHERE token = :token";
+        $stmt = $cnx->prepare($query);
+        $stmt->bindParam(':token', $token, PDO::PARAM_STR);
 
-            $stmt->bindParam(':token', $token, PDO::PARAM_STR);
-
-            if ($stmt->execute()) {
-                if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
-                    return true;
-                }
-            }
-            return false;
-        } catch (PDOException $e) {
-            error_log($e);
-            die;
-        }
-
+        return $stmt->execute();
     }
 
-    /**
-     * @throws PDOException
-     */
-    public function resetToken($cnx, $token): bool
+    public function deleteUserRefreshTokens($cnx, $userId): bool
     {
+        $query = "DELETE FROM refresh_tokens WHERE user_id = :user_id";
+        $stmt = $cnx->prepare($query);
+        $stmt->bindParam(':user_id', $userId);
 
-        $query = "UPDATE tokens SET updated_at = :updated_at WHERE token = :token";
-        try {
-            $stmt = $cnx->prepare($query);
-            $timestamp = date('Y-m-d H:i:s');
-            $stmt->bindParam(':updated_at', $timestamp, PDO::PARAM_STR);
-            $stmt->bindParam(':token', $token, PDO::PARAM_STR);
-            if ($stmt->execute()) {
-                return true;
-            }
-            return false;
-        } catch (PDOException $e) {
-            error_log($e);
-            die;
-        }
+        return $stmt->execute();
     }
 
-    public function deleteToken($cnx, $token): bool
-    {
-        $query = "DELETE FROM tokens WHERE token = :token";
-        try {
-            $cnx->beginTransaction();
-            $stmt = $cnx->prepare($query);
-            $stmt->bindParam(':token', $token, PDO::PARAM_STR);
-            $stmt->execute();
-            $query = "INSERT INTO blacklist_tokens (token, created_at, updated_at) VALUES (:token, :created_at, :updated_at)";
-            $stmt = $cnx->prepare($query);
-            $stmt->bindParam(':token', $token, PDO::PARAM_STR);
-            $timestamp = date('Y-m-d H:i:s');
-            $stmt->bindParam(':created_at', $timestamp, PDO::PARAM_STR);
-            $stmt->bindParam(':updated_at', $timestamp, PDO::PARAM_STR);
-            $stmt->execute();
-            $cnx->commit();
-            return true;
-        } catch (PDOException) {
-            if ($cnx->inTransaction()) {
-                $cnx->rollBack();
-            }
-            return false;
-        }
-    }
+
 }

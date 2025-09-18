@@ -21,7 +21,7 @@ class Migrations
      */
     public function makeMigrations(OutputInterface $output): Table|string
     {
-        $dotenv = Dotenv::createImmutable(realpath(__DIR__ . '/../'));
+        $dotenv = Dotenv::createImmutable(realpath(__DIR__ . '/../..'));
         $dotenv->load();
 
         $database = $_ENV['DB_DATABASE'];
@@ -60,45 +60,30 @@ class Migrations
         }
 
         $type = $_ENV['USER_TYPE'];
-        $queryCreatedTableTokens = "CREATE TABLE tokens (
-        token VARCHAR(300) PRIMARY KEY NOT NULL,
+        $queryCreatedTableRefreshTokens = "CREATE TABLE refresh_tokens (
+        id INT AUTO_INCREMENT PRIMARY KEY,
         user_id $type NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
-        )";
-
-        $queryCreatedTableBlacklist = "CREATE TABLE blacklist_tokens (
-        token VARCHAR(300) PRIMARY KEY NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        token VARCHAR(255) NOT NULL UNIQUE,
+        expires_at DATETIME NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )";
 
         if ($cnx instanceof PDOException) {
             $error = $cnx->getMessage();
             throw new ErrorConnection("\033[31m$error\033[0m\n");
         }
+
         $table = new Table($output);
-        $table->setHeaders(['Migrations', 'Status',]);
+        $table->setHeaders(['Migrations', 'Status']);
         $rows = [];
-        $counter = 0;
         try {
-            $stmt1 = $cnx->prepare($queryCreatedTableTokens);
-            if ($stmt1->execute()) {
-                $counter++;
-            };
-            $rows[] = ["tokens", "\033[32mOk\033[0m"];
-            $stmt2 = $cnx->prepare($queryCreatedTableBlacklist);
-            if ($stmt2->execute()) {
-                $counter++;
-            };
-            $rows[] = ['blacklist_tokens', "\033[32mOk\033[0m"];
+            $stmt1 = $cnx->prepare($queryCreatedTableRefreshTokens);
+            $stmt1->execute();
+            $rows[] = ["refresh_tokens", "\033[32mOk\033[0m"];
             $table->setRows($rows);
             return $table;
         } catch (PDOException | Exception $e) {
-            $tables = ['tokens', 'blacklist_tokens'];
-            for ($i = $counter; $i < count($tables); $i++) {
-                $rows[] = [$tables[$i], "\033[31mFailed\033[0m" ];
-            }
+            $rows[] = ["refresh_tokens", "\033[31mFailed\033[0m"];
             $table->setRows($rows);
             $error = $e->getMessage();
             echo "\033[31m$error\033[0m\n";

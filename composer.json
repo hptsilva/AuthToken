@@ -1,8 +1,16 @@
-{
+{   "description": "AuthToken is a PHP project that implements a token-based authentication system.",
+    "minimum-stability": "stable",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "hptsilva",
+            "email": "humbertot@hotmail.com.br"
+        }
+    ],
     "require": {
-        "vlucas/phpdotenv": "^5.6",
+      "vlucas/phpdotenv": "^5.6",
       "ext-pdo": "*",
-        "symfony/console": "^7.2"
+      "symfony/console": "^7.2"
     },
     "autoload": {
         "psr-4": {
