@@ -23,7 +23,7 @@ The library uses JSON Web Tokens (JWT) for short-lived, verifiable access tokens
 
 1.  Clone the repository into your project's root directory:
     ```bash
-    git clone [https://github.com/hptsilva/AuthToken.git](https://github.com/hptsilva/AuthToken.git)
+    git clone https://github.com/hptsilva/AuthToken.git
     ```
 2.  Install the project's required dependencies:
     ```bash
