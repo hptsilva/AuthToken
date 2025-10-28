@@ -27,9 +27,40 @@ class Secret {
             $secret .= $mergedChars[$randomIndex];
         }
 
-        $key = fopen('src/Secret/secret.txt', 'w');
-        fwrite($key, $secret);
-        fclose($key);
+        // Determine project root and .env path
+        $projectRoot = dirname(__DIR__, 2);
+        $envPath = $projectRoot . '/.env';
+
+        // Prepare the line to write (wrap in double quotes)
+        $envLine = 'APP_SECRET="' . $secret . '"';
+
+        // If .env exists, update APP_SECRET line if present, otherwise append
+        if (file_exists($envPath)) {
+            $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            $found = false;
+            foreach ($lines as $i => $line) {
+                // ignore comments and blank lines
+                $trimmed = ltrim($line);
+                if (stripos($trimmed, 'APP_SECRET=') === 0) {
+                    $lines[$i] = $envLine;
+                    $found = true;
+                    break;
+                }
+            }
+            if (! $found) {
+                $lines[] = $envLine;
+            }
+            // Preserve existing line endings
+            file_put_contents($envPath, implode(PHP_EOL, $lines) . PHP_EOL);
+        } else {
+            // Create .env and write APP_SECRET
+            file_put_contents($envPath, $envLine . PHP_EOL);
+        }
+
+        // Update runtime environment as well
+        $_ENV['APP_SECRET'] = $secret;
+        putenv('APP_SECRET=' . $secret);
+
         return $secret;
 
     }

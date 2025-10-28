@@ -37,6 +37,7 @@ The library uses JSON Web Tokens (JWT) for short-lived, verifiable access tokens
     DB_USER=root # Database username
     DB_PASSWORD=secret # User password
     USER_TYPE=INT # Type of the user ID value (e.g., INT or VARCHAR(255))
+    APP_SECRET=secretkey # Secret key used for signing JWTs
     
     # Access Token lifetime (PHP DateInterval format).
     ACCESS_TOKEN_TIMEOUT='+15 minutes'
@@ -63,6 +64,10 @@ The new workflow separates login, authentication, session refreshing, and logout
 require __DIR__ . '/vendor/autoload.php';
 
 use AuthToken\Auth;
+use Dotenv\Dotenv;
+
+$dotenv = Dotenv::createImmutable(realpath(__DIR__ . '/'));
+$dotenv->load();
 
 // It's recommended to instantiate the Auth class once and reuse it.
 $auth = new Auth();

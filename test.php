@@ -135,7 +135,6 @@ try {
         print_failure("O access token não expirou conforme o esperado. Verifique o .env.");
     }
 
-
     // ==========================================================
     // 7. LOGOUT (CAMINHO DE SUCESSO)
     // ==========================================================

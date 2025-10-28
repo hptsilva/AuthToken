@@ -15,11 +15,12 @@ class AccessToken extends Base64
      */
     public function __construct()
     {
-        $path = __DIR__ . '/Secret/secret.txt';
-        if (!file_exists($path)) {
-            throw new SecretNotFound('Secret key not found.');
+        // Read secret from environment (APP_SECRET). Dotenv should be loaded by the caller.
+        $secret = $_ENV['APP_SECRET'] ?? getenv('APP_SECRET') ?: null;
+        if (empty($secret)) {
+            throw new SecretNotFound('Secret key not found. Please set APP_SECRET in your .env (use `php auth-token secret` to generate one).');
         }
-        $this->secret = file_get_contents($path);
+        $this->secret = $secret;
     }
 
     /**

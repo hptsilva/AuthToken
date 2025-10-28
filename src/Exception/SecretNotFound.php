@@ -4,8 +4,8 @@ namespace AuthToken\Exception;
 use Exception;
 
 /**
- * The secret key was not found in src/secret/.
- * Use ```php auth-token secret``` to generate a secret key.
+ * The secret key was not found in the environment (.env).
+ * Use `php auth-token secret` to generate and store APP_SECRET in the project's .env file.
  */
 class SecretNotFound extends Exception
 {
