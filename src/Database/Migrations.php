@@ -24,27 +24,27 @@ class Migrations
         $dotenv = Dotenv::createImmutable(realpath(__DIR__ . '/../..'));
         $dotenv->load();
 
-        $database = $_ENV['DB_DATABASE'];
+        $database = $_ENV['AUTHTOKEN_DB_DATABASE'];
 
-        $host = $_ENV['DB_HOSTNAME'];
+        $host = $_ENV['AUTHTOKEN_DB_HOSTNAME'];
         try {
-            if ($_ENV['DB_CONNECTION'] == 'mysql' || $_ENV['DB_CONNECTION'] == 'mariadb') {
+            if ($_ENV['AUTHTOKEN_DB_CONNECTION'] == 'mysql' || $_ENV['AUTHTOKEN_DB_CONNECTION'] == 'mariadb') {
                 $queryVerifyDatabase = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '$database'";
                 $options = [
                     PDO::ATTR_EMULATE_PREPARES   => false,
                     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 ];
-                $connection = new PDO("mysql:host=$host", $_ENV['DB_USER'], $_ENV['DB_PASSWORD'], $options);
+                $connection = new PDO("mysql:host=$host", $_ENV['AUTHTOKEN_DB_USER'], $_ENV['AUTHTOKEN_DB_PASSWORD'], $options);
                 $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 $stmt = $connection->query($queryVerifyDatabase);
                 if (!$stmt->fetchColumn()) {
-                    $query_created_database = "CREATE DATABASE {$_ENV['DB_DATABASE']}";
+                    $query_created_database = "CREATE DATABASE {$_ENV['AUTHTOKEN_DB_DATABASE']}";
                     $connection->query($query_created_database);
                 }
                 $connection = new ConnectionDB();
                 $cnx = $connection->connect();
-            } else if ($_ENV['DB_CONNECTION'] == 'sqlite') {
+            } else if ($_ENV['AUTHTOKEN_DB_CONNECTION'] == 'sqlite') {
                 $cnx = new PDO("sqlite:".__DIR__."/$database.sqlite");
                 $cnx->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             } else {

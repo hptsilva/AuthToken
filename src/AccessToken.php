@@ -16,9 +16,9 @@ class AccessToken extends Base64
     public function __construct()
     {
         // Read secret from environment (APP_SECRET). Dotenv should be loaded by the caller.
-        $secret = $_ENV['APP_SECRET'] ?? getenv('APP_SECRET') ?: null;
+        $secret = $_ENV['AUTHTOKEN_APP_SECRET'] ?? getenv('AUTHTOKEN_APP_SECRET') ?: null;
         if (empty($secret)) {
-            throw new SecretNotFound('Secret key not found. Please set APP_SECRET in your .env (use `php auth-token secret` to generate one).');
+            throw new SecretNotFound('Secret key not found. Please set AUTHTOKEN_APP_SECRET in your .env (use `php auth-token secret` to generate one).');
         }
         $this->secret = $secret;
     }
@@ -31,7 +31,7 @@ class AccessToken extends Base64
         $header = $this->base64url_encode(json_encode(['alg' => 'HS256', 'typ' => 'JWT']));
 
         $issuedAt = new DateTimeImmutable();
-        $expire = $issuedAt->modify($_ENV['ACCESS_TOKEN_TIMEOUT'] ?? '+15 minutes')->getTimestamp();
+        $expire = $issuedAt->modify($_ENV['AUTHTOKEN_ACCESS_TOKEN_TIMEOUT'] ?? '+15 minutes')->getTimestamp();
 
         $payload = $this->base64url_encode(json_encode([
             'iat' => $issuedAt->getTimestamp(), // Issued at: time when the token was generated

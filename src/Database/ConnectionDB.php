@@ -20,18 +20,18 @@ class ConnectionDB {
     public function connect(): PDOException|PDO
     {
         try {
-            $hostname = $_ENV['DB_HOSTNAME'];
-            $username = $_ENV['DB_USER'];
-            $password = $_ENV['DB_PASSWORD'];
-            $database = $_ENV['DB_DATABASE'];
-            if ($_ENV['DB_CONNECTION'] == 'mysql' || $_ENV['DB_CONNECTION'] == 'mariadb') {
+            $hostname = $_ENV['AUTHTOKEN_DB_HOSTNAME'];
+            $username = $_ENV['AUTHTOKEN_DB_USER'];
+            $password = $_ENV['AUTHTOKEN_DB_PASSWORD'];
+            $database = $_ENV['AUTHTOKEN_DB_DATABASE'];
+            if ($_ENV['AUTHTOKEN_DB_CONNECTION'] == 'mysql' || $_ENV['AUTHTOKEN_DB_CONNECTION'] == 'mariadb') {
                 $options = [
                     PDO::ATTR_EMULATE_PREPARES   => false,
                     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 ];
                 return new PDO("mysql:host=$hostname;dbname=$database;charset=utf8mb4", $username, $password, $options);
-            } else if ($_ENV['DB_CONNECTION'] == 'sqlite') {
+            } else if ($_ENV['AUTHTOKEN_DB_CONNECTION'] == 'sqlite') {
 
                 $cnx = new PDO("sqlite:".__DIR__."/$database.sqlite");
                 $cnx->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

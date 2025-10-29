@@ -32,16 +32,16 @@ class Secret {
         $envPath = $projectRoot . '/.env';
 
         // Prepare the line to write (wrap in double quotes)
-        $envLine = 'APP_SECRET="' . $secret . '"';
+        $envLine = 'AUTHTOKEN_APP_SECRET="' . $secret . '"';
 
-        // If .env exists, update APP_SECRET line if present, otherwise append
+        // If .env exists, update AUTHTOKEN_APP_SECRET line if present, otherwise append
         if (file_exists($envPath)) {
             $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
             $found = false;
             foreach ($lines as $i => $line) {
                 // ignore comments and blank lines
                 $trimmed = ltrim($line);
-                if (stripos($trimmed, 'APP_SECRET=') === 0) {
+                if (stripos($trimmed, 'AUTHTOKEN_APP_SECRET=') === 0) {
                     $lines[$i] = $envLine;
                     $found = true;
                     break;
@@ -58,8 +58,8 @@ class Secret {
         }
 
         // Update runtime environment as well
-        $_ENV['APP_SECRET'] = $secret;
-        putenv('APP_SECRET=' . $secret);
+        $_ENV['AUTHTOKEN_APP_SECRET'] = $secret;
+        putenv('AUTHTOKEN_APP_SECRET=' . $secret);
 
         return $secret;
 

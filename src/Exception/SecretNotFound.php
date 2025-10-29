@@ -5,7 +5,7 @@ use Exception;
 
 /**
  * The secret key was not found in the environment (.env).
- * Use `php auth-token secret` to generate and store APP_SECRET in the project's .env file.
+ * Use `php auth-token secret` to generate and store AUTHTOKEN_APP_SECRET in the project's .env file.
  */
 class SecretNotFound extends Exception
 {

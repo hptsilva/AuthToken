@@ -32,18 +32,18 @@ The library uses JSON Web Tokens (JWT) for short-lived, verifiable access tokens
 3.  Create the **.env** file in your project root using **.env.example** as a template and fill in your details:
     ```.env
     DB_CONNECTION=mysql # Type of database connection (e.g., mysql, mariadb, sqlite).
-    DB_HOSTNAME=localhost # Host name
-    DB_DATABASE=auth # Database name
-    DB_USER=root # Database username
-    DB_PASSWORD=secret # User password
-    USER_TYPE=INT # Type of the user ID value (e.g., INT or VARCHAR(255))
-    APP_SECRET=secretkey # Secret key used for signing JWTs
+    AUTHTOKEN_DB_HOSTNAME=localhost # Host name
+    AUTHTOKEN_DB_DATABASE=auth # Database name
+    AUTHTOKEN_DB_USER=root # Database username
+    AUTHTOKEN_DB_PASSWORD=secret # User password
+    AUTHTOKEN_USER_TYPE=INT # Type of the user ID value (e.g., INT or VARCHAR(255))
+    AUTHTOKEN_APP_SECRET=secretkey # Secret key used for signing JWTs
     
     # Access Token lifetime (PHP DateInterval format).
-    ACCESS_TOKEN_TIMEOUT='+15 minutes'
+    AUTHTOKEN_ACCESS_TOKEN_TIMEOUT='+15 minutes'
     
     # Refresh Token lifetime (PHP DateInterval format).
-    REFRESH_TOKEN_INTERVAL='P7D'
+    AUTHTOKEN_REFRESH_TOKEN_INTERVAL='P7D'
     ```
 4.  Run the following command in the project root to generate a secret key (used for signing JWTs):
     ```bash
