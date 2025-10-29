@@ -31,7 +31,7 @@ The library uses JSON Web Tokens (JWT) for short-lived, verifiable access tokens
     ```
 3.  Create the **.env** file in your project root using **.env.example** as a template and fill in your details:
     ```.env
-    DB_CONNECTION=mysql # Type of database connection (e.g., mysql, mariadb, sqlite).
+    AUTHTOKEN_DB_CONNECTION=mysql # Type of database connection (e.g., mysql, mariadb, sqlite).
     AUTHTOKEN_DB_HOSTNAME=localhost # Host name
     AUTHTOKEN_DB_DATABASE=auth # Database name
     AUTHTOKEN_DB_USER=root # Database username
