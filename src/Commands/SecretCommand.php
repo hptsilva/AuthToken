@@ -10,7 +10,7 @@ use AuthToken\Secret\Secret;
 
 class SecretCommand extends Command
 {
-    protected static string $defaultName = 'begin';
+    protected static string $defaultName = 'secret';
 
     protected function configure(): void
     {
