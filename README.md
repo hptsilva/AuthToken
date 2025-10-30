@@ -150,18 +150,6 @@ if ($logoutResponse['status']) {
 ```
 
 ## Notes
-In your project's **composer.json** file, map the AuthToken namespaces to use the authentication and token generation classes:
-```php
-"autoload": {
-  "psr-4": {
-      "AuthToken\\": "AuthToken/src/"
-  }
-},
-```
-After that, run the following command to regenerate your project's Composer autoload:
-```php
-composer dump-autoload
-```
 If you need to rollback table migrations, run the following command in the project root:
 ```php
 ./vendor/bin/auth-token rollback
