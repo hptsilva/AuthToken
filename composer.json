@@ -1,4 +1,6 @@
-{   "description": "AuthToken is a PHP project that implements a token-based authentication system.",
+{   
+    "name": "hptsilva/authtoken",
+    "description": "AuthToken is a PHP project that implements a token-based authentication system.",
     "minimum-stability": "stable",
     "license": "MIT",
     "homepage": "https://github.com/hptsilva/AuthToken",
