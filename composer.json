@@ -24,6 +24,6 @@
         }
     },
     "bin": [
-        "auth-token"
+        "bin/auth-token"
     ]
 }
