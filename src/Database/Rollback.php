@@ -14,7 +14,7 @@ class Rollback
      */
     public function makeRollback():string
     {
-        $dotenv = Dotenv::createImmutable(realpath(__DIR__ . '/../..'));
+        $dotenv = Dotenv::createImmutable(getcwd());
         $dotenv->load();
 
         $connection = new ConnectionDB();

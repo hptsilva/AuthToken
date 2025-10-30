@@ -11,7 +11,7 @@ class Secret {
      * @return string
      * @throws RandomException
      */
-    public function generateSecret(): string
+    public function generateSecret(string $projectRootPath): string
     {
 
         $numbers = range(0, 9);
@@ -27,9 +27,7 @@ class Secret {
             $secret .= $mergedChars[$randomIndex];
         }
 
-        // Determine project root and .env path
-        $projectRoot = dirname(__DIR__, 2);
-        $envPath = $projectRoot . '/.env';
+        $envPath = $projectRootPath . '/.env';
 
         // Prepare the line to write (wrap in double quotes)
         $envLine = 'AUTHTOKEN_APP_SECRET="' . $secret . '"';

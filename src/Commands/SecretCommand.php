@@ -22,8 +22,9 @@ class SecretCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $projectRootPath = getcwd();
         $secret = new Secret();
-        $output->writeln($secret->generateSecret());
+        $output->writeln($secret->generateSecret($projectRootPath));
 
         return Command::SUCCESS;
     }

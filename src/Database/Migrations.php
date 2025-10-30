@@ -21,7 +21,7 @@ class Migrations
      */
     public function makeMigrations(OutputInterface $output): Table|string
     {
-        $dotenv = Dotenv::createImmutable(realpath(__DIR__ . '/../..'));
+        $dotenv = Dotenv::createImmutable(getcwd());
         $dotenv->load();
 
         $database = $_ENV['AUTHTOKEN_DB_DATABASE'];
@@ -55,11 +55,11 @@ class Migrations
             return "\033[31m$error\033[0m\n";
         }
 
-        if ($_ENV['USER_TYPE'] !== 'int' && $_ENV['USER_TYPE'] !== 'INT' && !preg_match('/^varchar\(\d+\)$/', $_ENV['USER_TYPE']) && !preg_match('/^VARCHAR\(\d+\)$/', $_ENV['USER_TYPE'])) {
-            throw new ErrorConnection("\033[31mUnknown USER_TYPE\033[0m\n");
+        if ($_ENV['AUTHTOKEN_USER_TYPE'] !== 'int' && $_ENV['AUTHTOKEN_USER_TYPE'] !== 'INT' && !preg_match('/^varchar\(\d+\)$/', $_ENV['AUTHTOKEN_USER_TYPE']) && !preg_match('/^VARCHAR\(\d+\)$/', $_ENV['AUTHTOKEN_USER_TYPE'])) {
+            throw new ErrorConnection("\033[31mUnknown AUTHTOKEN_USER_TYPE\033[0m\n");
         }
 
-        $type = $_ENV['USER_TYPE'];
+        $type = $_ENV['AUTHTOKEN_USER_TYPE'];
         $queryCreatedTableRefreshTokens = "CREATE TABLE refresh_tokens (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id $type NOT NULL,
