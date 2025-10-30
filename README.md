@@ -21,10 +21,10 @@ The library uses JSON Web Tokens (JWT) for short-lived, verifiable access tokens
 
 ## Installation
 
-1.  Add or update the following blocks to the composer.json file of your main project:
+1.  Add or update the following blocks to the `composer.json` file of your main project. This instructs Composer to find your package on GitHub and use the latest stable version:
     ```bash
     "require": {
-        "hptsilva/authtoken": "dev-main",
+        "hptsilva/authtoken": "^1.0",
     },
     "repositories": [
         {
