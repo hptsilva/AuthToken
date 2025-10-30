@@ -21,13 +21,21 @@ The library uses JSON Web Tokens (JWT) for short-lived, verifiable access tokens
 
 ## Installation
 
-1.  Clone the repository into your project's root directory:
+1.  Add or update the following blocks to the composer.json file of your main project:
     ```bash
-    git clone https://github.com/hptsilva/AuthToken.git
+    "require": {
+        "hptsilva/authtoken": "dev-main",
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/hptsilva/AuthToken.git"
+        }
+    ]
     ```
-2.  Install the project's required dependencies:
+2.  Then run the require command specifying the branch (e.g., main):
     ```bash
-    composer install
+    composer require hptsilva/authtoken:dev-main
     ```
 3.  Create the **.env** file in your project root using **.env.example** as a template and fill in your details:
     ```.env
@@ -45,14 +53,30 @@ The library uses JSON Web Tokens (JWT) for short-lived, verifiable access tokens
     # Refresh Token lifetime (PHP DateInterval format).
     AUTHTOKEN_REFRESH_TOKEN_INTERVAL='P7D'
     ```
-4.  Run the following command in the project root to generate a secret key (used for signing JWTs):
+4.  Run the following command in your project root to generate a secret key (used for signing JWTs):
     ```bash
-    php auth-token secret
+    ./vendor/bin/auth-token secret
     ```
-5.  Run the following command in the project root to execute table migrations:
+5.  Run the following command in your project root to execute table migrations:
     ```bash
-    php auth-token migrate
+    ./vendor/bin/auth-token migrate
     ```
+
+## Tips:
+
+For easier access, add these commands to the scripts section of your project's composer.json:
+```bash
+"scripts": {
+    "auth:secret": "./vendor/bin/auth-token secret",
+    "auth:migrate": "./vendor/bin/auth-token migrate",
+}
+```
+
+Now you can run them more easily:
+```bash
+composer auth:secret
+composer auth:migrate
+```
 
 ## Usage
 
@@ -140,5 +164,7 @@ composer dump-autoload
 ```
 If you need to rollback table migrations, run the following command in the project root:
 ```php
-php auth-token rollback
+./vendor/bin/auth-token rollback
+# or
+composer auth:rollback # if you add scripts in your project's composer.json
 ```
