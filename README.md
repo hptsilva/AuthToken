@@ -33,9 +33,9 @@ The library uses JSON Web Tokens (JWT) for short-lived, verifiable access tokens
         }
     ]
     ```
-2.  Then run the require command specifying the branch (e.g., main):
+2.  Then run the require command to install dependencies of your PHP project:
     ```bash
-    composer require hptsilva/authtoken:dev-main
+    composer install
     ```
 3.  Create the **.env** file in your project root using **.env.example** as a template and fill in your details:
     ```.env
