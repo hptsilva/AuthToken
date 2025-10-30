@@ -61,6 +61,10 @@ The library uses JSON Web Tokens (JWT) for short-lived, verifiable access tokens
     ```bash
     ./vendor/bin/auth-token migrate
     ```
+6.  (Optional) If you need to revert the migrations, you can run the rollback command:
+    ```bash
+    ./vendor/bin/auth-token rollback
+    ```
 
 ## Tips:
 
@@ -69,6 +73,7 @@ For easier access, add these commands to the scripts section of your project's c
 "scripts": {
     "auth:secret": "./vendor/bin/auth-token secret",
     "auth:migrate": "./vendor/bin/auth-token migrate",
+    "auth:rollback": "./vendor/bin/auth-token rollback"
 }
 ```
 
@@ -76,6 +81,7 @@ Now you can run them more easily:
 ```bash
 composer auth:secret
 composer auth:migrate
+composer auth:rollback
 ```
 
 ## Usage
@@ -148,11 +154,6 @@ if ($logoutResponse['status']) {
 }
 
 ```
+## License
 
-## Notes
-If you need to rollback table migrations, run the following command in the project root:
-```php
-./vendor/bin/auth-token rollback
-# or
-composer auth:rollback # if you add scripts in your project's composer.json
-```
+This project is licensed under the MIT License.
