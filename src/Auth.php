@@ -10,6 +10,13 @@ use Exception;
 use PDOException;
 use Random\RandomException;
 
+/**
+ * Class Auth
+ *
+ * Handles the primary authentication logic including login, token validation,
+ * session refreshing, and logout. It acts as a facade, orchestrating the
+ * interactions between the AccessToken handler and the database connection.
+ */
 class Auth
 {
     private ConnectionDB $connection;
@@ -17,7 +24,12 @@ class Auth
     private AccessToken $accessTokenHandler;
 
     /**
-     * @throws ErrorConnection
+     * Auth constructor.
+     *
+     * Initializes the authentication service by establishing a database connection
+     * and preparing the AccessToken handler.
+     *
+     * @throws ErrorConnection if the database connection fails.
      */
     public function __construct()
     {
@@ -31,11 +43,15 @@ class Auth
     }
 
     /**
-     * Log in, generating a pair of Access and Refresh tokens.
-     * Invalidates any old refresh tokens for this user.
-     * @param int|string $userID
-     * @return array
-     * @throws RandomException
+     * Logs a user in by generating a new pair of access and refresh tokens.
+     *
+     * This method first invalidates any existing refresh tokens for the specified user,
+     * ensuring that each login creates a new, unique session.
+     *
+     * @param int|string $userID The unique identifier for the user.
+     * @return array An associative array containing the operation status, HTTP code,
+     *               'access_token', and 'refresh_token'.
+     * @throws RandomException if the cryptographic random number generator fails.
      */
     public function login(int|string $userID): array
     {
@@ -69,7 +85,14 @@ class Auth
     }
 
     /**
-     * Validates an Access Token.
+     * Validates an access token to authenticate a request.
+     *
+     * Checks the token's signature and expiration time.
+     *
+     * @param string $accessToken The JWT access token to be validated.
+     * @return array An associative array with the authentication status.
+     *               On success, it includes 'status', 'code', and 'user_id'.
+     *               On failure, it includes 'status', 'code', and 'message'.
      */
     public function authenticate(string $accessToken): array
     {
@@ -83,7 +106,14 @@ class Auth
     }
 
     /**
-     * Generate a new pair of tokens using a valid Refresh Token.
+     * Refreshes a session using a valid refresh token.
+     *
+     * This method implements refresh token rotation: upon successful validation, the old
+     * refresh token is invalidated and a new pair of access and refresh tokens is issued.
+     *
+     * @param string $refreshToken The refresh token used to generate new tokens.
+     * @return array A new set of tokens ('access_token', 'refresh_token') on success,
+     *               or an error message on failure.
      */
     public function refresh(string $refreshToken): array
     {
@@ -110,7 +140,13 @@ class Auth
     }
 
     /**
-     * Logout by invalidating the Refresh Token.
+     * Logs a user out by invalidating their refresh token.
+     *
+     * This effectively terminates the user's session, preventing the refresh token
+     * from being used to obtain new access tokens.
+     *
+     * @param string $refreshToken The refresh token of the session to be terminated.
+     * @return array An array indicating the result of the logout operation.
      */
     public function logout(string $refreshToken): array
     {
