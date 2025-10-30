@@ -16,8 +16,8 @@ foreach ($paths as $path) {
 }
 
 if (!$autoloader_found) {
-    echo "Erro: Não foi possível encontrar o autoloader do Composer (autoload.php).\n";
-    echo "Verifique se você executou 'composer install'.\n";
+    echo "Error: Could not find the Composer autoloader (autoload.php).\n";
+    echo "Please make sure you have run 'composer install'.\n";
     exit(1);
 }
 
