@@ -33,7 +33,8 @@ class ConnectionDB {
                 return new PDO("mysql:host=$hostname;dbname=$database;charset=utf8mb4", $username, $password, $options);
             } else if ($_ENV['AUTHTOKEN_DB_CONNECTION'] == 'sqlite') {
 
-                $cnx = new PDO("sqlite:".__DIR__."/$database.sqlite");
+                $path = $_ENV['AUTHTOKEN_DB_SQLITE_PATH'] ?? __DIR__;
+                $cnx = new PDO("sqlite:" . $path . "/$database.sqlite");
                 $cnx->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 return $cnx;
             } else {

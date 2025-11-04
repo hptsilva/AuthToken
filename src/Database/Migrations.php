@@ -45,7 +45,8 @@ class Migrations
                 $connection = new ConnectionDB();
                 $cnx = $connection->connect();
             } else if ($_ENV['AUTHTOKEN_DB_CONNECTION'] == 'sqlite') {
-                $cnx = new PDO("sqlite:".__DIR__."/$database.sqlite");
+                $path = $_ENV['AUTHTOKEN_DB_SQLITE_PATH'] ?? __DIR__;
+                $cnx = new PDO("sqlite:" . $path . "/$database.sqlite");
                 $cnx->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             } else {
                 return "\033[31mUnknown DB connection\033[0m\n";

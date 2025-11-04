@@ -34,7 +34,7 @@ class Secret {
 
         // If .env exists, update AUTHTOKEN_APP_SECRET line if present, otherwise append
         if (file_exists($envPath)) {
-            $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            $lines = file($envPath, FILE_IGNORE_NEW_LINES);
             $found = false;
             foreach ($lines as $i => $line) {
                 // ignore comments and blank lines

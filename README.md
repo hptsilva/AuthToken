@@ -37,15 +37,26 @@ The library uses JSON Web Tokens (JWT) for short-lived, verifiable access tokens
     ```bash
     composer install
     ```
-3.  Create the **.env** file in your project root using **.env.example** as a template and fill in your details:
+3.  Create the **.env** file in your project root using **.env.example** as a template and fill in your details. Below is an explanation of each variable:
     ```.env
-    AUTHTOKEN_DB_CONNECTION=mysql # Type of database connection (e.g., mysql, mariadb, sqlite).
-    AUTHTOKEN_DB_HOSTNAME=localhost # Host name
-    AUTHTOKEN_DB_DATABASE=auth # Database name
-    AUTHTOKEN_DB_USER=root # Database username
-    AUTHTOKEN_DB_PASSWORD=secret # User password
-    AUTHTOKEN_USER_TYPE=INT # Type of the user ID value (e.g., INT or VARCHAR(255))
-    AUTHTOKEN_APP_SECRET=secretkey # Secret key used for signing JWTs
+    # --- Database Configuration ---
+    AUTHTOKEN_DB_CONNECTION=mysql # Connection type: "mysql", "mariadb", or "sqlite".
+
+    # --- Settings for MySQL/MariaDB (leave blank if using SQLite) ---
+    AUTHTOKEN_DB_HOSTNAME=localhost # Database host.
+    AUTHTOKEN_DB_DATABASE=auth      # Database name.
+    AUTHTOKEN_DB_USER=root          # Database username.
+    AUTHTOKEN_DB_PASSWORD=secret    # Database password.
+
+    # --- Settings for SQLite (leave blank if using MySQL/MariaDB) ---
+    AUTHTOKEN_DB_SQLITE_PATH=       # Directory to store the SQLite file (defaults to project root).
+
+    # --- Token Configuration ---
+    # Data type for the user ID column. Use "INT" for numbers or "VARCHAR(255)" for strings/UUIDs.
+    AUTHTOKEN_USER_TYPE=INT
+    
+    # Secret key for signing JWTs. Generate one with the `secret` command.
+    AUTHTOKEN_APP_SECRET=secretkey
     
     # Access Token lifetime (PHP DateInterval format).
     AUTHTOKEN_ACCESS_TOKEN_TIMEOUT='+15 minutes'
